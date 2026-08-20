@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Download, Loader2, User, Shield, FileJson, Info, Code } from 'lucide-react';
+import { Download, Loader2, User, Shield, FileJson, Info, Code, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentAdmin } from '@/utils/auth';
+import http from '@/utils/http';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ const SettingsPage = () => {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [loadingBlog, setLoadingBlog] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const handleExport = async (
     fn: () => Promise<void>,
@@ -31,6 +33,28 @@ const SettingsPage = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncToFrontend = async (): Promise<void> => {
+    setSyncing(true);
+    try {
+      const res = await http.post('/api/export/sync-to-frontend');
+      if (res.data.success) {
+        toast.success('同步成功', {
+          description: res.data.message,
+        });
+      } else {
+        toast.error('同步失败', {
+          description: res.data.message,
+        });
+      }
+    } catch (err) {
+      toast.error('同步失败', {
+        description: err instanceof Error ? err.message : '请稍后重试',
+      });
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -155,7 +179,38 @@ const SettingsPage = () => {
           </CardContent>
         </Card>
 
-        {/* 导入说明卡片 */}
+        {/* 一键同步到前台卡片 */}
+        <Card className="rounded-md shadow-sm border-primary/30">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg">一键同步到前台网站</CardTitle>
+            </div>
+            <CardDescription>
+              将产品、分类、博客数据直接写入前台项目的 src/data 目录，刷新前台即可看到变化
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <Button
+                variant="default"
+                onClick={handleSyncToFrontend}
+                disabled={syncing}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {syncing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                同步所有数据到前台
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                同步后请刷新前台网站页面查看更新。前台项目路径可在后台 .env 中通过 FRONTEND_DATA_DIR 配置。
+              </p>
+            </div>
+          </CardContent>
+        </Card>
         <Card className="rounded-md shadow-sm">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">

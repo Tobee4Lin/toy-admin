@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { ExportService } from './export.service';
 
@@ -37,5 +37,10 @@ export class ExportController {
       'attachment; filename="blog.json"',
     );
     res.send(JSON.stringify(data, null, 2));
+  }
+
+  @Post('sync-to-frontend')
+  async syncToFrontend() {
+    return this.exportService.syncToFrontend();
   }
 }

@@ -8,8 +8,16 @@ dist/
 build/
 */build/
 
-# Environment files
+# Environment files (keep .env.example)
+.env
 .env.local
+.env.*.local
+
+# Database files
+data/
+
+# Uploaded files (runtime generated)
+server/public/uploads/
 
 # Logs
 npm-debug.log*
