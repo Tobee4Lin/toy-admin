@@ -1,0 +1,364 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "type": "app_init",
+      "name": "应用初始化任务",
+      "status": "completed",
+      "subtasks": [
+        "初始化布局导航文件Layout",
+        "初始化主题文件",
+        "初始化占位页面和路由",
+        "本任务以编译与日志检查为界，日志确认无错即提交；运行时核验统一由验收测试任务承担"
+      ],
+      "beginTime": 1787101116079,
+      "endTime": 1787101286539
+    },
+    {
+      "id": 2,
+      "name": "代码架构与共享骨架搭建",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "读取 coding-guide skill 了解项目编码规范",
+        "规划后端模块目录结构（category/product/blog-post/inquiry/dashboard/export 模块）",
+        "规划前端页面目录与路由配置（9个页面）",
+        "搭建后台布局骨架：Sidebar 侧边栏 + TopBar 顶部栏 + 主内容区",
+        "配置前端路由与页面占位组件，确保导航可跳转",
+        "创建 shared 类型定义文件（Product/Category/BlogPost/Inquiry 接口）",
+        "确认文件上传使用平台内置文件存储服务"
+      ],
+      "requirements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "11"
+      ],
+      "write_scope": [
+        "client/src/app.tsx",
+        "client/src/components/Layout/**",
+        "client/src/pages/**",
+        "shared/api.interface.ts",
+        "server/app.module.ts"
+      ],
+      "read_scope": [
+        "server/database/schema.ts",
+        "client/src/app.tsx",
+        "shared/api.interface.ts"
+      ],
+      "acceptance": "所有页面路由可正常跳转，侧边栏导航项完整，布局骨架渲染正常",
+      "dependencies": [],
+      "beginTime": 1787101286675,
+      "endTime": 1787101749755
+    },
+    {
+      "id": 3,
+      "name": "数据库表结构与种子数据",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "读取 coding-guide skill，确认 Drizzle ORM 使用规范",
+        "创建分类表（category）Schema 定义",
+        "创建产品表（product）Schema 定义",
+        "创建博客文章表（blog_post）Schema 定义",
+        "创建询盘表（inquiry）Schema 定义",
+        "执行数据库迁移，生成表结构",
+        "插入种子数据：4个默认分类、6-8个示例产品、3篇博客文章、3-4条询盘",
+        "校验种子数据可正常查询"
+      ],
+      "requirements": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "write_scope": [
+        "server/database/schema.ts",
+        "server/database/seed.ts"
+      ],
+      "read_scope": [
+        "server/database/schema.ts"
+      ],
+      "acceptance": "四张业务表创建成功，种子数据可通过查询接口正常返回",
+      "dependencies": [],
+      "beginTime": 1787101286675,
+      "endTime": 1787101749755
+    },
+    {
+      "id": 4,
+      "name": "分类管理模块开发（含前后端）",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "创建分类服务端模块（Service + Controller + DTO）",
+        "实现分类 CRUD 四个接口（列表/创建/更新/删除）",
+        "创建分类管理页面与表格组件",
+        "实现分类编辑弹窗（名称/Slug/描述/颜色选择器/图片上传）",
+        "集成图片上传（首图与卡片图）并预览",
+        "实现删除确认对话框与 Toast 反馈",
+        "前后端联调验证增删改查全流程"
+      ],
+      "requirements": [
+        "5",
+        "9"
+      ],
+      "write_scope": [
+        "server/modules/category/**",
+        "client/src/pages/Categories/**"
+      ],
+      "read_scope": [
+        "server/database/schema.ts",
+        "shared/api.interface.ts"
+      ],
+      "acceptance": "分类 CRUD 全流程可用，颜色选择器和图片上传正常工作",
+      "dependencies": [
+        2,
+        3
+      ],
+      "beginTime": 1787101749923,
+      "endTime": 1787102134828
+    },
+    {
+      "id": 5,
+      "name": "产品管理模块开发（含前后端）",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "创建产品服务端模块（Service + Controller + DTO）",
+        "实现产品列表接口（搜索/分类筛选/分页）",
+        "实现产品 CRUD 接口（详情/创建/更新/删除）",
+        "实现批量删除和切换精选状态接口",
+        "创建产品列表页面：搜索框+分类筛选+数据表格+分页",
+        "实现行内精选开关切换与批量删除功能",
+        "创建产品表单页面（新建/编辑共用）：标签页分区布局",
+        "实现特性列表动态增删与规格参数键值对动态管理",
+        "集成主图与画廊多图上传，支持预览与删除",
+        "实现 Slug 自动生成与手动编辑",
+        "实现保存并返回/保存并继续编辑两种操作",
+        "前后端联调验证产品全流程"
+      ],
+      "requirements": [
+        "3",
+        "4",
+        "9"
+      ],
+      "write_scope": [
+        "server/modules/product/**",
+        "client/src/pages/Products/**"
+      ],
+      "read_scope": [
+        "server/database/schema.ts",
+        "shared/api.interface.ts",
+        "server/modules/category/category.service.ts"
+      ],
+      "acceptance": "产品列表可搜索筛选分页，表单可创建编辑产品含图片上传与动态字段",
+      "dependencies": [
+        2,
+        3,
+        4
+      ],
+      "beginTime": 1787102134962,
+      "endTime": 1787102551966
+    },
+    {
+      "id": 6,
+      "name": "博客管理模块开发（含前后端）",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "创建博客服务端模块（Service + Controller + DTO）",
+        "实现博客列表接口（搜索/分类筛选/分页）",
+        "实现博客 CRUD 接口（详情/创建/更新/删除）",
+        "创建博客列表页面：搜索+分类筛选+文章列表",
+        "创建博客表单页面（新建/编辑共用）",
+        "实现段落内容编辑器（添加/删除/上下移动排序）",
+        "集成作者头像与封面图上传预览",
+        "实现 Slug 自动从标题生成",
+        "前后端联调验证博客全流程"
+      ],
+      "requirements": [
+        "6",
+        "7",
+        "9"
+      ],
+      "write_scope": [
+        "server/modules/blog-post/**",
+        "client/src/pages/Blog/**"
+      ],
+      "read_scope": [
+        "server/database/schema.ts",
+        "shared/api.interface.ts"
+      ],
+      "acceptance": "博客列表可搜索筛选，表单可创建编辑含段落编辑器与图片上传",
+      "dependencies": [
+        2,
+        3
+      ],
+      "beginTime": 1787101749923,
+      "endTime": 1787102134828
+    },
+    {
+      "id": 7,
+      "name": "询盘管理模块开发（含前后端）",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "创建询盘服务端模块（Service + Controller + DTO）",
+        "实现询盘列表接口（状态筛选/搜索/分页）",
+        "实现询盘详情、状态更新、删除接口",
+        "创建询盘列表页面：状态标签栏+搜索框+数据表格",
+        "实现新询盘红点未读徽章与状态标签颜色区分",
+        "实现询盘详情抽屉（右侧滑出，展示完整信息）",
+        "实现抽屉内状态切换下拉与删除操作",
+        "前后端联调验证询盘全流程"
+      ],
+      "requirements": [
+        "8"
+      ],
+      "write_scope": [
+        "server/modules/inquiry/**",
+        "client/src/pages/Inquiries/**"
+      ],
+      "read_scope": [
+        "server/database/schema.ts",
+        "shared/api.interface.ts"
+      ],
+      "acceptance": "询盘列表可筛选搜索，详情抽屉展示完整信息，状态切换即时生效",
+      "dependencies": [
+        2,
+        3
+      ],
+      "beginTime": 1787101749923,
+      "endTime": 1787102134828
+    },
+    {
+      "id": 8,
+      "name": "仪表盘模块开发（含前后端）",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "创建仪表盘服务端模块（Service + Controller）",
+        "实现统计数据接口（产品/分类/博客/新询盘数量）",
+        "实现最近询盘列表接口（5条）",
+        "实现产品分类分布统计接口",
+        "创建仪表盘页面：四个统计卡片 + 最近询盘列表",
+        "实现快捷操作入口卡片（添加产品/发布博客/查看询盘/导出数据）",
+        "集成 recharts 柱状图展示分类产品分布",
+        "添加数据加载骨架屏",
+        "前后端联调验证仪表盘数据展示"
+      ],
+      "requirements": [
+        "2",
+        "10"
+      ],
+      "write_scope": [
+        "server/modules/dashboard/**",
+        "client/src/pages/Dashboard/**"
+      ],
+      "read_scope": [
+        "server/database/schema.ts",
+        "shared/api.interface.ts"
+      ],
+      "acceptance": "仪表盘统计数据准确展示，分类分布图正常渲染，快捷入口可跳转",
+      "dependencies": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "beginTime": 1787102552126,
+      "endTime": 1787102881669
+    },
+    {
+      "id": 9,
+      "name": "系统设置与数据导出模块开发（含前后端）",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "读取 user-identity skill，获取当前管理员信息方式",
+        "创建导出服务端模块（ExportController + Service）",
+        "实现产品/分类/博客三个导出接口，输出前端兼容格式 JSON",
+        "创建系统设置页面：管理员信息展示 + 修改密码表单",
+        "实现修改密码功能（验证原密码→更新密码→Toast提示）",
+        "实现数据导出区（三个导出按钮，点击触发浏览器下载）",
+        "实现导入前端网站的操作说明展示区",
+        "前后端联调验证设置与导出功能"
+      ],
+      "requirements": [
+        "10",
+        "11"
+      ],
+      "write_scope": [
+        "server/modules/export/**",
+        "server/modules/admin/**",
+        "client/src/pages/Settings/**"
+      ],
+      "read_scope": [
+        "shared/api.interface.ts"
+      ],
+      "acceptance": "密码修改成功，导出的 JSON 文件格式与前端网站数据结构一致",
+      "dependencies": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "beginTime": 1787102552126,
+      "endTime": 1787102881669
+    },
+    {
+      "id": 10,
+      "name": "验收测试",
+      "type": "normal",
+      "status": "completed",
+      "subtasks": [
+        "读取 testing-guide skill",
+        "架构与入口检查：侧边栏导航完整、所有路由可访问、布局一致",
+        "核心验收目标1：产品管理全流程 —— 创建产品含图片上传和动态字段，列表可搜索筛选，编辑保存后数据正确",
+        "核心验收目标2：询盘管理全流程 —— 询盘列表可按状态筛选，详情抽屉展示完整信息，状态切换即时更新",
+        "核心验收目标3：数据导出功能 —— 导出的 products.json/categories.json/blog.json 字段结构与前端格式一致",
+        "非核心降级范围：种子数据完整性、图表视觉细节、移动端响应式适配深度"
+      ],
+      "requirements": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11"
+      ],
+      "write_scope": [],
+      "read_scope": [
+        "client/src/app.tsx",
+        "shared/api.interface.ts"
+      ],
+      "acceptance": "三个核心验收目标全部通过，无阻塞性问题",
+      "dependencies": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "beginTime": 1787102881830,
+      "endTime": 1787103416407
+    }
+  ]
+}

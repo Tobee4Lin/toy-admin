@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.app.local.json",
+  "compilerOptions": {
+    "incremental": true
+  }
+}

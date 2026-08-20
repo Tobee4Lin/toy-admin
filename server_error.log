@@ -1,0 +1,76 @@
+﻿[Nest] 21804  - 2026/08/20 09:44:51     LOG [DB-Migrate] Running database migrations...
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [DB-Migrate] Database migrations completed successfully.
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [NestFactory] Starting Nest application... +10ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] AppModule dependencies initialized +20ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] PassportModule dependencies initialized +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] JwtModule dependencies initialized +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] UploadModule dependencies initialized +4ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] DashboardModule dependencies initialized +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] ExportModule dependencies initialized +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] CategoryModule dependencies initialized +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] ProductModule dependencies initialized +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] BlogPostModule dependencies initialized +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] InquiryModule dependencies initialized +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [InstanceLoader] AuthModule dependencies initialized +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] AuthController {/api/auth}: +229ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/auth/login, POST} route +5ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] CategoryController {/api/categories}: +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/categories, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/categories, POST} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/categories/:id, PUT} route +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/categories/:id, DELETE} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] ProductController {/api/products}: +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/products, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/products/batch, DELETE} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/products/:id, GET} route +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/products, POST} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/products/:id, PUT} route +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/products/:id, DELETE} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/products/:id/featured, POST} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] BlogPostController {/api/blog-posts}: +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/blog-posts, GET} route +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/blog-posts/:id, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/blog-posts, POST} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/blog-posts/:id, PUT} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/blog-posts/:id, DELETE} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] InquiryController {/api/inquiries}: +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/inquiries, GET} route +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/inquiries/:id, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/inquiries/:id/status, PUT} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/inquiries/:id, DELETE} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] PublicInquiryController {/api/public}: +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/public/inquiries, POST} route +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/public/leads, POST} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] DashboardController {/api/dashboard}: +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/dashboard/stats, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/dashboard/recent-inquiries, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/dashboard/category-distribution, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] ExportController {/api/export}: +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/export/products, GET} route +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/export/categories, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/export/blog, GET} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RoutesResolver] UploadController {/api/upload}: +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/upload, POST} route +0ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [RouterExplorer] Mapped {/api/upload/file/:filename, GET} route +1ms
+[Nest] 21804  - 2026/08/20 09:44:51     LOG [NestApplication] Nest application successfully started +4ms
+npx : [Nest] 21804  - 2026/08/20 09:44:51   ERROR [NestApplication] Error: listen EADDRINUSE: address already in use 0.
+0.0.0:3000 +13ms
+At line:1 char:10710
++ ... cdbmwsc0s"; npx ts-node -P tsconfig.node.local.json server/bootstrap. ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([Nest] 21804  -....0.0:3000 +13ms:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at processTicksAndRejections (node:internal/process/task_queues:83:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
