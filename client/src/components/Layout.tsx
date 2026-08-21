@@ -5,6 +5,7 @@ import {
   Tags,
   FileText,
   MessageSquare,
+  Users,
   Settings,
   LogOut,
   ChevronRight,
@@ -42,6 +43,7 @@ const NAV_ITEMS: NavItem[] = [
   { path: "/categories", label: "分类管理", icon: Tags },
   { path: "/blog", label: "博客管理", icon: FileText },
   { path: "/inquiries", label: "询盘管理", icon: MessageSquare },
+  { path: "/customers", label: "客户管理", icon: Users },
   { path: "/settings", label: "系统设置", icon: Settings },
 ];
 

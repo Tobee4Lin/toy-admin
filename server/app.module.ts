@@ -12,6 +12,7 @@ import { InquiryModule } from './modules/inquiry/inquiry.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ExportModule } from './modules/export/export.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { CustomerModule } from './modules/customer/customer.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UploadModule } from './modules/upload/upload.module';
     DashboardModule,
     ExportModule,
     UploadModule,
+    CustomerModule,
   ],
   providers: [
     {

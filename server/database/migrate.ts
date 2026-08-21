@@ -102,6 +102,49 @@ export async function migrateAndSeed(): Promise<void> {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS customer (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_no TEXT NOT NULL UNIQUE,
+      company TEXT NOT NULL,
+      country TEXT,
+      city TEXT,
+      background TEXT,
+      scale TEXT,
+      employee_count TEXT,
+      founded_year TEXT,
+      source TEXT DEFAULT 'manual',
+      contact_person TEXT,
+      whatsapp TEXT,
+      google_address TEXT,
+      facebook TEXT,
+      website TEXT,
+      email TEXT,
+      instagram TEXT,
+      linkedin TEXT,
+      contact_invalid TEXT NOT NULL DEFAULT '{}',
+      customer_type TEXT,
+      priority TEXT DEFAULT 'C',
+      brand_used TEXT,
+      business_detail TEXT,
+      last_follow_up_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS customer_followup (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER NOT NULL,
+      follow_date INTEGER NOT NULL,
+      content TEXT,
+      feedback TEXT,
+      is_replied INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
   const adminRow = db.select().from(admin).limit(1).get();
   if (!adminRow) {
     logger.log('Seeding default admin user...');

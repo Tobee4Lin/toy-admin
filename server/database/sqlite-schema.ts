@@ -127,7 +127,60 @@ export const inquiry = sqliteTable('inquiry', {
   index('idx_inquiry_created_at').on(table.createdAt),
 ]);
 
+export const customer = sqliteTable('customer', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  customerNo: text('customer_no').notNull().unique(),
+  company: text('company').notNull(),
+  country: text('country'),
+  city: text('city'),
+  background: text('background'),
+  scale: text('scale'),
+  employeeCount: text('employee_count'),
+  foundedYear: text('founded_year'),
+  source: text('source').default('manual'),
+  contactPerson: text('contact_person'),
+  whatsapp: text('whatsapp'),
+  googleAddress: text('google_address'),
+  facebook: text('facebook'),
+  website: text('website'),
+  email: text('email'),
+  instagram: text('instagram'),
+  linkedin: text('linkedin'),
+  contactInvalid: text('contact_invalid', { mode: 'json' }).notNull().default(`{}`),
+  customerType: text('customer_type'),
+  priority: text('priority').default('C'),
+  brandUsed: text('brand_used'),
+  businessDetail: text('business_detail'),
+  lastFollowUpAt: integer('last_follow_up_at', { mode: 'timestamp_ms' }),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+}, (table) => [
+  uniqueIndex('customer_no_key').on(table.customerNo),
+  index('idx_customer_country').on(table.country),
+  index('idx_customer_priority').on(table.priority),
+]);
+
+export const customerFollowup = sqliteTable('customer_followup', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  customerId: integer('customer_id').notNull(),
+  followDate: integer('follow_date', { mode: 'timestamp_ms' }).notNull(),
+  content: text('content'),
+  feedback: text('feedback'),
+  isReplied: integer('is_replied', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+}, (table) => [
+  index('idx_followup_customer_id').on(table.customerId),
+]);
+
 export const categoryTable = category;
 export const productTable = product;
 export const blogPostTable = blogPost;
 export const inquiryTable = inquiry;
+export const customerTable = customer;
+export const customerFollowupTable = customerFollowup;

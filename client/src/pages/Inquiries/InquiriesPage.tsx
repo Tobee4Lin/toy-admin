@@ -16,6 +16,7 @@ import {
   Phone,
   Link as LinkIcon,
   Tag,
+  UserPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -60,6 +61,7 @@ import {
   updateInquiryStatus,
   deleteInquiry,
 } from '@client/src/api/inquiries';
+import { createCustomerFromInquiry } from '@client/src/api/customers';
 import type { Inquiry, InquiryListResponse } from '@shared/api.interface';
 
 const STATUS_TABS: { key: string; label: string }[] = [
@@ -364,6 +366,22 @@ const InquiriesPage = () => {
                   </TableCell>
                   <TableCell className="pr-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            const customer = await createCustomerFromInquiry(Number(item.id));
+                            toast.success(`已转为客户：${customer.customerNo}`);
+                          } catch (e: any) {
+                            toast.error(e?.response?.data?.message || '转为客户失败');
+                          }
+                        }}
+                        className="h-8 px-2 text-green-600 hover:text-green-700"
+                      >
+                        <UserPlus className="size-4" />
+                        转客户
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"

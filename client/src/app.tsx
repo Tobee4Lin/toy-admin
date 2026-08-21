@@ -10,6 +10,7 @@ import CategoriesPage from './pages/Categories/CategoriesPage';
 import BlogPage from './pages/Blog/BlogPage';
 import BlogFormPage from './pages/Blog/BlogFormPage';
 import InquiriesPage from './pages/Inquiries/InquiriesPage';
+import CustomersPage from './pages/Customers/CustomersPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import LoginPage from './pages/Login/LoginPage';
 
@@ -27,6 +28,7 @@ const RoutesComponent = () => {
         <Route path="blog/new" element={<BlogFormPage />} />
         <Route path="blog/:id/edit" element={<BlogFormPage />} />
         <Route path="inquiries" element={<InquiriesPage />} />
+        <Route path="customers" element={<CustomersPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />
