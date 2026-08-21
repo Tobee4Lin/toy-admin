@@ -158,8 +158,14 @@ UPLOAD_DIR=./server/public/uploads
 ### 3. 启动开发服务器
 
 ```bash
+# 方式一：通过 npm（推荐）
 npm run dev
+
+# 方式二：直接运行启动脚本
+node dev.js
 ```
+
+`dev.js` 会同时启动后端（NestJS，端口 3000）和前端（Vite，端口 8080）。
 
 启动后：
 - 前端管理后台：http://localhost:8080
@@ -178,7 +184,8 @@ npm run dev
 
 | 命令 | 说明 |
 |------|------|
-| `npm run dev` | 启动前后端开发服务器（推荐） |
+| `npm run dev` | 启动前后端开发服务器（等同于 `node dev.js`，推荐） |
+| `node dev.js` | 直接运行启动脚本，前后端并发启动 |
 | `npm run dev:server` | 仅启动后端（NestJS watch模式） |
 | `npm run dev:client` | 仅启动前端（Vite） |
 | `npm run build` | 构建生产版本（前后端） |
