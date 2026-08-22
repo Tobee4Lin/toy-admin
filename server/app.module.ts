@@ -13,6 +13,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ExportModule } from './modules/export/export.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { CustomerModule } from './modules/customer/customer.module';
+import { DocumentModule } from './modules/document/document.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CustomerModule } from './modules/customer/customer.module';
     ExportModule,
     UploadModule,
     CustomerModule,
+    DocumentModule,
   ],
   providers: [
     {

@@ -145,6 +145,38 @@ export async function migrateAndSeed(): Promise<void> {
     )
   `);
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS document (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL DEFAULT 'quotation',
+      document_no TEXT NOT NULL UNIQUE,
+      date TEXT,
+      validity TEXT,
+      seller_info TEXT,
+      buyer_info TEXT,
+      items TEXT,
+      terms TEXT,
+      bank_info TEXT,
+      notes TEXT,
+      total_amount TEXT,
+      currency TEXT DEFAULT 'USD',
+      status TEXT DEFAULT 'draft',
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+  // Add bank_info column if table exists but column doesn't (for existing databases)
+  try {
+    const cols = db.all(`PRAGMA table_info(document)`) as { name: string }[];
+    if (!cols.find((c) => c.name === 'bank_info')) {
+      db.run('ALTER TABLE document ADD COLUMN bank_info TEXT');
+      logger.log('Added bank_info column to document table');
+    }
+  } catch {
+    /* table might not exist yet, ignore */
+  }
+
   const adminRow = db.select().from(admin).limit(1).get();
   if (!adminRow) {
     logger.log('Seeding default admin user...');

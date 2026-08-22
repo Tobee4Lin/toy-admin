@@ -178,6 +178,32 @@ export const customerFollowup = sqliteTable('customer_followup', {
   index('idx_followup_customer_id').on(table.customerId),
 ]);
 
+export const document = sqliteTable('document', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  type: text('type', { enum: ['quotation', 'pi', 'ci', 'pl'] }).notNull().default('quotation'),
+  documentNo: text('document_no').notNull(),
+  date: text('date'),
+  validity: text('validity'),
+  sellerInfo: text('seller_info', { mode: 'json' }),
+  buyerInfo: text('buyer_info', { mode: 'json' }),
+  items: text('items', { mode: 'json' }),
+  terms: text('terms', { mode: 'json' }),
+  bankInfo: text('bank_info', { mode: 'json' }),
+  notes: text('notes'),
+  totalAmount: text('total_amount'),
+  currency: text('currency').default('USD'),
+  status: text('status', { enum: ['draft', 'sent', 'confirmed'] }).default('draft'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+}, (table) => [
+  index('idx_document_type').on(table.type),
+  uniqueIndex('document_no_unique').on(table.documentNo),
+]);
+
 export const categoryTable = category;
 export const productTable = product;
 export const blogPostTable = blogPost;

@@ -11,6 +11,8 @@ import BlogPage from './pages/Blog/BlogPage';
 import BlogFormPage from './pages/Blog/BlogFormPage';
 import InquiriesPage from './pages/Inquiries/InquiriesPage';
 import CustomersPage from './pages/Customers/CustomersPage';
+import DocumentsPage from './pages/Documents/DocumentsPage';
+import DocumentEditor from './pages/Documents/DocumentEditor';
 import SettingsPage from './pages/Settings/SettingsPage';
 import LoginPage from './pages/Login/LoginPage';
 
@@ -29,6 +31,9 @@ const RoutesComponent = () => {
         <Route path="blog/:id/edit" element={<BlogFormPage />} />
         <Route path="inquiries" element={<InquiriesPage />} />
         <Route path="customers" element={<CustomersPage />} />
+        <Route path="documents" element={<DocumentsPage />} />
+        <Route path="documents/new" element={<DocumentEditor />} />
+        <Route path="documents/:id" element={<DocumentEditor />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />

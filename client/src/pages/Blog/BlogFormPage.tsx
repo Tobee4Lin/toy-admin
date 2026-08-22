@@ -51,7 +51,7 @@ const BlogFormPage = () => {
   const [date, setDate] = useState('');
   const [readingTime, setReadingTime] = useState('');
   const [coverImage, setCoverImage] = useState('');
-  const [content, setContent] = useState<string[]>(['']);
+  const [content, setContent] = useState<string>('');
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -94,7 +94,7 @@ const BlogFormPage = () => {
         setReadingTime(post.readingTime);
         setCoverImage(post.coverImage);
         setContent(
-          post.content && post.content.length > 0 ? post.content : ['']
+          post.content && post.content.length > 0 ? post.content.join('\n\n') : ''
         );
       } catch (err: unknown) {
         logger.error('加载文章失败', err);
@@ -105,36 +105,6 @@ const BlogFormPage = () => {
     };
     loadPost();
   }, [id]);
-
-  // 段落操作
-  const addParagraph = () => {
-    setContent([...content, '']);
-  };
-
-  const updateParagraph = (index: number, value: string) => {
-    const newContent = [...content];
-    newContent[index] = value;
-    setContent(newContent);
-  };
-
-  const removeParagraph = (index: number) => {
-    if (content.length <= 1) {
-      setContent(['']);
-      return;
-    }
-    setContent(content.filter((_, i: number) => i !== index));
-  };
-
-  const moveParagraph = (index: number, direction: 'up' | 'down') => {
-    const newContent = [...content];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newContent.length) return;
-    [newContent[index], newContent[targetIndex]] = [
-      newContent[targetIndex],
-      newContent[index],
-    ];
-    setContent(newContent);
-  };
 
   // 图片上传
   const handleAvatarUpload = async (
@@ -187,7 +157,7 @@ const BlogFormPage = () => {
       date,
       readingTime,
       coverImage,
-      content: content.filter((p: string) => p.trim() !== ''),
+      content: content.split(/\n\s*\n/).map((p: string) => p.trim()).filter((p: string) => p !== ''),
     };
   };
 
@@ -274,7 +244,7 @@ const BlogFormPage = () => {
               {isEdit ? '编辑文章' : '新建文章'}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              填写文章信息并添加内容段落
+              填写文章信息、正文内容并上传图片
             </p>
           </div>
         </div>
@@ -372,6 +342,28 @@ const BlogFormPage = () => {
         </CardContent>
       </Card>
 
+      {/* 正文内容 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">正文内容</CardTitle>
+          <CardDescription>输入文章正文，段落之间用空行分隔，保存时自动分段</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="在此输入文章正文内容...
+
+段落之间用空行分隔，会自动保存为多个段落。"
+            rows={16}
+            className="resize-y min-h-[300px] text-base leading-relaxed"
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            当前正文约 {content.length} 字，{content.split(/\n\s*\n/).filter(p => p.trim()).length} 个段落
+          </p>
+        </CardContent>
+      </Card>
+
       {/* 图片上传区 */}
       <Card>
         <CardHeader>
@@ -462,71 +454,6 @@ const BlogFormPage = () => {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* 段落内容编辑器 */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">内容段落</CardTitle>
-            <CardDescription>逐段编辑文章正文内容</CardDescription>
-          </div>
-          <Button variant="outline" size="sm" onClick={addParagraph}>
-            <Plus className="size-4" />
-            添加段落
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {content.map((paragraph: string, index: number) => (
-            <div
-              key={index}
-              className="group rounded-md border border-border bg-card p-4 transition-colors hover:border-primary/30 hover:shadow-sm"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">
-                  段落 {index + 1}
-                </span>
-                <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => moveParagraph(index, 'up')}
-                    disabled={index === 0}
-                    title="上移"
-                  >
-                    <ChevronUp className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => moveParagraph(index, 'down')}
-                    disabled={index === content.length - 1}
-                    title="下移"
-                  >
-                    <ChevronDown className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => removeParagraph(index)}
-                    title="删除"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              </div>
-              <Textarea
-                value={paragraph}
-                onChange={(e) => updateParagraph(index, e.target.value)}
-                placeholder="在此输入段落内容..."
-                rows={4}
-              />
-            </div>
-          ))}
         </CardContent>
       </Card>
 
