@@ -14,6 +14,7 @@ import { ExportModule } from './modules/export/export.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { CustomerModule } from './modules/customer/customer.module';
 import { DocumentModule } from './modules/document/document.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { DocumentModule } from './modules/document/document.module';
     UploadModule,
     CustomerModule,
     DocumentModule,
+    AiModule,
   ],
   providers: [
     {

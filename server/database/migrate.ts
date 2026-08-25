@@ -177,6 +177,149 @@ export async function migrateAndSeed(): Promise<void> {
     /* table might not exist yet, ignore */
   }
 
+  // AI Lead Generation tables
+  db.run(`
+    CREATE TABLE IF NOT EXISTS ai_lead_search (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_name TEXT NOT NULL,
+      keywords TEXT NOT NULL DEFAULT '[]',
+      hs_code TEXT,
+      industry TEXT,
+      target_countries TEXT NOT NULL DEFAULT '[]',
+      target_customer_types TEXT NOT NULL DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'pending',
+      result_count INTEGER NOT NULL DEFAULT 0,
+      search_strategy TEXT,
+      error_message TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+      completed_at INTEGER
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS ai_lead (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      search_id INTEGER NOT NULL,
+      company_name TEXT NOT NULL,
+      website TEXT,
+      country TEXT,
+      city TEXT,
+      industry TEXT,
+      business_type TEXT,
+      company_size TEXT,
+      estimated_scale TEXT,
+      product_relevance TEXT,
+      potential_customer_type TEXT,
+      email TEXT,
+      phone TEXT,
+      whatsapp TEXT,
+      linkedin TEXT,
+      facebook TEXT,
+      instagram TEXT,
+      contact_person TEXT,
+      job_title TEXT,
+      lead_score INTEGER NOT NULL DEFAULT 0,
+      lead_grade TEXT NOT NULL DEFAULT 'C',
+      score_details TEXT,
+      is_saved INTEGER NOT NULL DEFAULT 0,
+      saved_customer_id INTEGER,
+      source TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+  // AI Intelligence Report table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS ai_intelligence_report (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      company_name TEXT NOT NULL,
+      website TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      basic_info TEXT,
+      business_info TEXT,
+      main_products TEXT,
+      brand_info TEXT,
+      market_coverage TEXT,
+      social_media TEXT,
+      company_potential TEXT,
+      risk_analysis TEXT,
+      purchase_probability TEXT,
+      recommendation TEXT,
+      contacts TEXT,
+      error_message TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+      completed_at INTEGER
+    )
+  `);
+
+  // AI Outreach table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS ai_outreach (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER,
+      customer_name TEXT NOT NULL,
+      product_name TEXT,
+      target_country TEXT,
+      strategy TEXT,
+      cold_email TEXT,
+      linkedin_message TEXT,
+      facebook_message TEXT,
+      whatsapp_message TEXT,
+      status TEXT NOT NULL DEFAULT 'draft',
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+      sent_at INTEGER
+    )
+  `);
+
+  // Email Center tables
+  db.run(`
+    CREATE TABLE IF NOT EXISTS email_account (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      provider TEXT NOT NULL,
+      smtp_host TEXT,
+      smtp_port INTEGER,
+      smtp_secure INTEGER NOT NULL DEFAULT 0,
+      imap_host TEXT,
+      imap_port INTEGER,
+      username TEXT,
+      password TEXT,
+      access_token TEXT,
+      refresh_token TEXT,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      last_sync_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS email_message (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      account_id INTEGER NOT NULL,
+      message_id TEXT,
+      thread_id TEXT,
+      direction TEXT NOT NULL,
+      subject TEXT,
+      from_name TEXT,
+      from_email TEXT NOT NULL,
+      to_email TEXT NOT NULL DEFAULT '[]',
+      cc_email TEXT DEFAULT '[]',
+      body_text TEXT,
+      body_html TEXT,
+      is_read INTEGER NOT NULL DEFAULT 0,
+      ai_category TEXT NOT NULL DEFAULT 'uncategorized',
+      ai_summary TEXT,
+      ai_draft_reply TEXT,
+      customer_id INTEGER,
+      sent_at INTEGER,
+      received_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+  logger.log('AI module tables created successfully.');
+
   const adminRow = db.select().from(admin).limit(1).get();
   if (!adminRow) {
     logger.log('Seeding default admin user...');

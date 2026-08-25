@@ -10,6 +10,10 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Search,
+  Brain,
+  Send,
+  Mail,
 } from "lucide-react";
 
 import {
@@ -46,6 +50,10 @@ const NAV_ITEMS: NavItem[] = [
   { path: "/inquiries", label: "询盘管理", icon: MessageSquare },
   { path: "/customers", label: "客户管理", icon: Users },
   { path: "/documents", label: "单证管理", icon: ClipboardList },
+  { path: "/ai-lead", label: "AI获客", icon: Search },
+  { path: "/ai-intelligence", label: "AI背调", icon: Brain },
+  { path: "/ai-outreach", label: "AI开发", icon: Send },
+  { path: "/email-center", label: "邮箱中心", icon: Mail },
   { path: "/settings", label: "系统设置", icon: Settings },
 ];
 
