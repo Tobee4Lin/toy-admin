@@ -47,3 +47,43 @@ export const toggleFeatured = async (
   const res = await http.post(`/api/products/${id}/featured`);
   return res.data;
 };
+
+export const downloadProductTemplate = async (): Promise<void> => {
+  const res = await http.get('/api/products/template/download', {
+    responseType: 'blob',
+  });
+  const url = window.URL.createObjectURL(new Blob([res.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'product_import_template.xlsx');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+export const batchImportProducts = async (
+  file: File,
+): Promise<{
+  success: number;
+  failed: number;
+  errors: Array<{ row: number; message: string }>;
+}> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await http.post('/api/products/batch-import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+};
+
+export const batchImportProductsJson = async (
+  products: Array<Record<string, unknown>>,
+): Promise<{
+  success: number;
+  failed: number;
+  errors: Array<{ row: number; message: string }>;
+}> => {
+  const res = await http.post('/api/products/batch-import-json', { products });
+  return res.data;
+};

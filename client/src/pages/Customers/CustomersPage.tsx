@@ -845,8 +845,8 @@ export default function CustomersPage() {
 
         {/* Pagination */}
         {total > 0 && (
-          <div className="flex items-center justify-between border-t p-4">
-            <p className="text-sm text-muted-foreground">共 {total} 条，第 {page} / {totalPages} 页</p>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t p-4">
+            <p className="text-sm text-muted-foreground whitespace-nowrap">共 {total} 条，第 {page} / {totalPages} 页</p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                 <ChevronLeft className="h-4 w-4" /> 上一页

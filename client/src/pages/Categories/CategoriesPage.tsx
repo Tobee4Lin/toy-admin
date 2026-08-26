@@ -257,7 +257,6 @@ const CategoriesPage = () => {
                   <TableHead className="w-10 pl-4"></TableHead>
                   <TableHead>名称</TableHead>
                   <TableHead>Slug</TableHead>
-                  <TableHead className="text-right">产品数量</TableHead>
                   <TableHead>强调色</TableHead>
                   <TableHead className="text-right pr-4">操作</TableHead>
                 </TableRow>
@@ -266,7 +265,7 @@ const CategoriesPage = () => {
                 {categories.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={5}
                       className="text-center text-muted-foreground py-12"
                     >
                       暂无分类数据
@@ -284,9 +283,6 @@ const CategoriesPage = () => {
                       <TableCell className="font-medium">{cat.name}</TableCell>
                       <TableCell className="text-muted-foreground font-mono text-xs">
                         {cat.slug}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        {cat.productCount}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -373,23 +369,8 @@ const CategoriesPage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="cat-count">产品数量</Label>
-                <Input
-                  id="cat-count"
-                  type="number"
-                  value={form.productCount}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      productCount: Number(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cat-accent">强调色</Label>
+            <div className="space-y-2">
+              <Label htmlFor="cat-accent">强调色</Label>
                 <div className="flex items-center gap-2">
                   <div
                     className="flex h-9 w-12 items-center justify-center rounded-md border border-input bg-transparent px-1"
@@ -419,7 +400,6 @@ const CategoriesPage = () => {
                   />
                 </div>
               </div>
-            </div>
 
             <div className="space-y-2">
               <Label>首图</Label>

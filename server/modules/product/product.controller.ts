@@ -7,9 +7,14 @@ import {
   Post,
   Put,
   Query,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
+import type { Response } from 'express';
 import { ProductService } from './product.service';
 import type { PaginatedResponse, Product } from '@shared/api.interface';
 
@@ -30,6 +35,42 @@ export class ProductController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
     });
+  }
+
+  // 下载Excel模板
+  @Get('template/download')
+  @UseGuards(AuthGuard('jwt'))
+  async downloadTemplate(@Res() res: Response) {
+    const buffer = this.productService.generateTemplate();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=product_import_template.xlsx');
+    res.send(buffer);
+  }
+
+  // 批量导入产品（JSON格式，前端已处理图片URL）
+  @Post('batch-import-json')
+  @UseGuards(AuthGuard('jwt'))
+  async batchImportJson(@Body() body: { products: Array<Record<string, unknown>> }) {
+    if (!body.products || !Array.isArray(body.products)) {
+      return { success: 0, failed: 0, errors: [{ row: 0, message: '产品数据格式错误' }] };
+    }
+    return this.productService.batchImport(body.products);
+  }
+
+  // 批量导入产品
+  @Post('batch-import')
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  async batchImport(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      return { success: 0, failed: 0, errors: [{ row: 0, message: '请上传Excel文件' }] };
+    }
+    const rows = this.productService.parseExcel(file.buffer);
+    return this.productService.batchImport(rows);
   }
 
   // Static route BEFORE :id

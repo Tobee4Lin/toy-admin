@@ -409,8 +409,8 @@ const InquiriesPage = () => {
 
         {/* Pagination */}
         {!loading && data && data.total > 0 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-border">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
               共 {data.total} 条，第 {data.page} / {totalPages} 页
             </div>
             <div className="flex items-center gap-1">

@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -6,6 +6,7 @@ import {
   Trash2,
   Pencil,
   Package,
+  Upload,
 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
@@ -51,6 +52,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Image } from '@/components/ui/image';
+import { BatchImportDialog } from '@/components/products/BatchImportDialog';
 
 import {
   listProducts,
@@ -73,6 +75,7 @@ const ProductsPage = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
+  const [batchImportOpen, setBatchImportOpen] = useState(false);
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async () => {
@@ -249,6 +252,14 @@ const ProductsPage = () => {
                 批量删除
                 {selectedIds.length > 0 && ` (${selectedIds.length})`}
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBatchImportOpen(true)}
+              >
+                <Upload className="mr-1.5 size-4" />
+                批量导入
+              </Button>
               <Button size="sm" onClick={() => navigate('/products/new')}>
                 <Plus className="mr-1.5 size-4" />
                 添加产品
@@ -373,14 +384,14 @@ const ProductsPage = () => {
 
           {/* Pagination */}
           {data && data.total > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-border">
+              <div className="flex items-center gap-3 text-sm text-muted-foreground whitespace-nowrap">
                 <span>共 {data.total} 条</span>
                 <Select
                   value={String(pageSize)}
                   onValueChange={handlePageSizeChange}
                 >
-                  <SelectTrigger className="w-24 h-8">
+                  <SelectTrigger className="w-[110px] h-8">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -474,6 +485,16 @@ const ProductsPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Batch import dialog */}
+      <BatchImportDialog
+        open={batchImportOpen}
+        onOpenChange={setBatchImportOpen}
+        onSuccess={() => {
+          setPage(1);
+          fetchProducts();
+        }}
+      />
     </div>
   );
 };

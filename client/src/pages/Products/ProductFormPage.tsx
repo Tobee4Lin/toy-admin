@@ -774,21 +774,21 @@ const ProductFormPage = () => {
                   onChange={handleGalleryUpload}
                   className="hidden"
                 />
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                <div className="flex flex-wrap gap-3">
                   {gallery.map((url: string, index: number) => (
-                    <div key={index} className="relative group">
+                    <div key={index} className="relative group w-[88px] h-[88px] flex-shrink-0">
                       <Image
                         src={url}
                         alt={`画廊图片 ${index + 1}`}
-                        width={80}
-                        height={80}
-                        className="w-20 h-20 rounded-md object-cover border border-border"
+                        width={88}
+                        height={88}
+                        className="w-full h-full rounded-md object-cover border border-border"
                       />
                       <Button
                         type="button"
                         variant="destructive"
                         size="icon"
-                        className="absolute -top-2 -right-2 size-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute -top-2 -right-2 size-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         onClick={() => removeGalleryImage(index)}
                       >
                         <X className="size-3" />
@@ -796,14 +796,14 @@ const ProductFormPage = () => {
                     </div>
                   ))}
                   {galleryUploading && (
-                    <div className="w-20 h-20 rounded-md border border-border border-dashed flex items-center justify-center">
+                    <div className="w-[88px] h-[88px] rounded-md border border-border border-dashed flex items-center justify-center flex-shrink-0">
                       <Loader2 className="size-5 animate-spin text-muted-foreground" />
                     </div>
                   )}
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    className="w-20 h-20 rounded-md border-2 border-dashed border-border hover:border-primary transition-colors flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary"
+                    className="w-[88px] h-[88px] rounded-md border-2 border-dashed border-border hover:border-primary transition-colors flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary flex-shrink-0"
                   >
                     <Upload className="size-5" />
                     <span className="text-xs">添加</span>

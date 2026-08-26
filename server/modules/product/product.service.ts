@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import * as XLSX from 'xlsx';
 import * as schema from '../../database/sqlite-schema';
 import { DATABASE_PROVIDER } from '../database/database.module';
 import type { DbType } from '../../database/db';
@@ -235,5 +236,180 @@ export class ProductService {
       throw new NotFoundException('产品不存在');
     }
     return { id: String(rows[0].id), isFeatured: rows[0].isFeatured };
+  }
+
+  // 生成Excel模板
+  generateTemplate(): Buffer {
+    const headers = [
+      '产品名称*',
+      '货号(Item No.)',
+      '分类Slug(beach-toys/bubble-toys/rc-toys/building-blocks)',
+      '产品描述',
+      '产品特性(用分号;分隔)',
+      'MOQ起订量',
+      '是否支持定制(是/否)',
+      '主图(填写文件名如product.jpg，或完整URL)',
+      '画廊图片(文件名用分号;分隔，或完整URL)',
+      '包装信息',
+      '交货周期',
+      '适用年龄',
+      '价格区间',
+      '是否精选(是/否)',
+    ];
+
+    const sampleData = [
+      [
+        'Summer Beach Bucket Set',
+        'BT-20012',
+        'beach-toys',
+        '7-piece beach bucket set with shovel, rake and sand molds',
+        '7-piece set;Durable plastic;Bright colors',
+        500,
+        '是',
+        'beach-bucket.jpg',
+        'beach-bucket-1.jpg;beach-bucket-2.jpg',
+        '48 pcs/ctn, 0.12 CBM',
+        '25-30 days',
+        '3+',
+        '$1.20-$1.80',
+        '否',
+      ],
+      [
+        'Automatic Bubble Gun',
+        'BB-10001',
+        'bubble-toys',
+        'Electric automatic bubble gun with LED light',
+        'Automatic;LED light;Includes bubble solution',
+        1000,
+        '是',
+        'https://example.com/bubble-gun.jpg',
+        '',
+        '60 pcs/ctn, 0.15 CBM',
+        '30-35 days',
+        '3+',
+        '$2.50-$3.50',
+        '是',
+      ],
+    ];
+
+    const wsData = [headers, ...sampleData];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // 设置列宽
+    ws['!cols'] = [
+      { wch: 30 }, { wch: 15 }, { wch: 35 }, { wch: 40 }, { wch: 30 },
+      { wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 40 }, { wch: 20 },
+      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 12 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '产品导入模板');
+
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    return Buffer.from(buffer);
+  }
+
+  // 解析Excel文件
+  parseExcel(buffer: Buffer): Array<Record<string, unknown>> {
+    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+    return jsonData as Array<Record<string, unknown>>;
+  }
+
+  // 批量导入产品
+  async batchImport(rows: Array<Record<string, unknown>>): Promise<{
+    success: number;
+    failed: number;
+    errors: Array<{ row: number; message: string }>;
+  }> {
+    const results: { success: number; failed: number; errors: Array<{ row: number; message: string }> } = {
+      success: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowNum = i + 2; // Excel行号，第1行是表头
+
+      try {
+        const name = String(row['产品名称*'] || row['产品名称'] || '').trim();
+        if (!name) {
+          results.failed++;
+          results.errors.push({ row: rowNum, message: '产品名称不能为空' });
+          continue;
+        }
+
+        // 生成slug
+        let slug = String(row['Slug'] || '').trim();
+        if (!slug) {
+          slug = name.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 100);
+          if (!slug) slug = `product-${Date.now()}-${i}`;
+        }
+
+        // 检查slug是否已存在
+        const existing = this.db
+          .select({ id: schema.product.id })
+          .from(schema.product)
+          .where(eq(schema.product.slug, slug))
+          .get();
+        if (existing) {
+          slug = `${slug}-${Date.now().toString(36)}`;
+        }
+
+        const itemNumber = String(row['货号(Item No.)'] || row['货号'] || '').trim();
+        const category = String(row['分类Slug(beach-toys/bubble-toys/rc-toys/building-blocks)'] || row['分类'] || '').trim();
+        const description = String(row['产品描述'] || '').trim();
+        const featuresStr = String(row['产品特性(用分号;分隔)'] || '').trim();
+        const features = featuresStr ? featuresStr.split(/[;；]/).map((s: string) => s.trim()).filter(Boolean) : [];
+        const moq = parseInt(String(row['MOQ起订量'] || row['MOQ'] || '0'), 10) || 0;
+        const customizationStr = String(row['是否支持定制(是/否)'] || row['是否支持定制'] || '否').trim();
+        const customizationAvailable = customizationStr === '是' || customizationStr === 'true' || customizationStr === 'yes';
+        const imageUrl = String(row['主图(填写文件名如product.jpg，或完整URL)'] || row['主图URL'] || row['主图'] || '').trim();
+        const galleryStr = String(row['画廊图片(文件名用分号;分隔，或完整URL)'] || row['画廊图片URL(用分号;分隔)'] || row['画廊图片'] || '').trim();
+        const gallery = galleryStr ? galleryStr.split(/[;；]/).map((s: string) => s.trim()).filter(Boolean) : [];
+        const packagingInfo = String(row['包装信息'] || '').trim();
+        const leadTime = String(row['交货周期'] || '').trim();
+        const ageGroup = String(row['适用年龄'] || '').trim();
+        const priceRange = String(row['价格区间'] || '').trim();
+        const featuredStr = String(row['是否精选(是/否)'] || row['是否精选'] || '否').trim();
+        const isFeatured = featuredStr === '是' || featuredStr === 'true' || featuredStr === 'yes';
+
+        this.db
+          .insert(schema.product)
+          .values({
+            name,
+            slug,
+            itemNumber,
+            category,
+            description,
+            features,
+            specifications: {},
+            moq,
+            customizationAvailable,
+            imageUrl,
+            gallery,
+            packagingInfo,
+            leadTime,
+            ageGroup,
+            priceRange,
+            isFeatured,
+          } as any)
+          .run();
+
+        results.success++;
+      } catch (error: unknown) {
+        results.failed++;
+        const message = error instanceof Error ? error.message : '未知错误';
+        results.errors.push({ row: rowNum, message });
+      }
+    }
+
+    return results;
   }
 }
