@@ -158,6 +158,7 @@ export async function migrateAndSeed(): Promise<void> {
       terms TEXT,
       bank_info TEXT,
       notes TEXT,
+      shipping_mark TEXT,
       total_amount TEXT,
       currency TEXT DEFAULT 'USD',
       status TEXT DEFAULT 'draft',
@@ -172,6 +173,10 @@ export async function migrateAndSeed(): Promise<void> {
     if (!cols.find((c) => c.name === 'bank_info')) {
       db.run('ALTER TABLE document ADD COLUMN bank_info TEXT');
       logger.log('Added bank_info column to document table');
+    }
+    if (!cols.find((c) => c.name === 'shipping_mark')) {
+      db.run('ALTER TABLE document ADD COLUMN shipping_mark TEXT');
+      logger.log('Added shipping_mark column to document table');
     }
   } catch {
     /* table might not exist yet, ignore */

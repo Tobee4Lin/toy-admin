@@ -29,6 +29,8 @@ export interface SellerInfo {
   tel: string;
   address: string;
   logo?: string;
+  sealImage?: string;
+  signatureImage?: string;
 }
 
 export interface BuyerInfo {
@@ -69,6 +71,7 @@ export interface DocumentData {
   terms?: DocumentTerms;
   bankInfo?: BankInfo;
   notes?: string;
+  shippingMark?: string;
   totalAmount?: string;
   currency?: string;
   status?: 'draft' | 'sent' | 'confirmed';
@@ -122,6 +125,7 @@ export class DocumentService {
         terms: data.terms ? JSON.stringify(data.terms) : null,
         bankInfo: data.bankInfo ? JSON.stringify(data.bankInfo) : null,
         notes: data.notes,
+        shippingMark: data.shippingMark,
         totalAmount: data.totalAmount,
         currency: data.currency || 'USD',
         status: data.status || 'draft',
@@ -163,6 +167,7 @@ export class DocumentService {
           bankInfo: data.bankInfo ? JSON.stringify(data.bankInfo) : null,
         }),
         ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.shippingMark !== undefined && { shippingMark: data.shippingMark }),
         ...(data.totalAmount !== undefined && { totalAmount: data.totalAmount }),
         ...(data.currency !== undefined && { currency: data.currency }),
         ...(data.status !== undefined && { status: data.status }),
@@ -214,6 +219,7 @@ export class DocumentService {
       terms: row.terms ? JSON.parse(row.terms as string) : undefined,
       bankInfo: row.bankInfo ? JSON.parse(row.bankInfo as string) : undefined,
       notes: row.notes || '',
+      shippingMark: row.shippingMark || '',
       totalAmount: row.totalAmount || '0',
       currency: row.currency || 'USD',
       status: row.status as DocumentData['status'],

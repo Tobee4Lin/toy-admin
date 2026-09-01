@@ -10,6 +10,7 @@ import {
   FileText,
   Package,
   Search,
+  PenLine,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -121,6 +122,7 @@ export default function DocumentEditor() {
   const [loading, setLoading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingSeal, setUploadingSeal] = useState(false);
+  const [uploadingSignature, setUploadingSignature] = useState(false);
 
   const [type, setType] = useState<DocumentData['type']>('quotation');
   const [documentNo, setDocumentNo] = useState('');
@@ -133,6 +135,7 @@ export default function DocumentEditor() {
   const [terms, setTerms] = useState<DocumentTerms>(emptyTerms);
   const [bankInfo, setBankInfo] = useState<BankInfo>(emptyBankInfo);
   const [notes, setNotes] = useState('');
+  const [shippingMark, setShippingMark] = useState('');
 
   // Product picker
   const [showProductPicker, setShowProductPicker] = useState(false);
@@ -173,6 +176,7 @@ export default function DocumentEditor() {
         setTerms(doc.terms || emptyTerms);
         setBankInfo(doc.bankInfo || emptyBankInfo);
         setNotes(doc.notes || '');
+        setShippingMark(doc.shippingMark || '');
       } catch (err) {
         console.error('Load document failed:', err);
         toast.error('加载单证失败');
@@ -210,6 +214,21 @@ export default function DocumentEditor() {
       toast.error('印章上传失败');
     } finally {
       setUploadingSeal(false);
+    }
+  };
+
+  const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingSignature(true);
+    try {
+      const { url } = await uploadFile(file);
+      setSeller((prev) => ({ ...prev, signatureImage: url }));
+      toast.success('签名上传成功');
+    } catch {
+      toast.error('签名上传失败');
+    } finally {
+      setUploadingSignature(false);
     }
   };
 
@@ -313,6 +332,7 @@ export default function DocumentEditor() {
       terms,
       bankInfo,
       notes,
+      shippingMark,
       totalAmount,
     };
   };
@@ -366,6 +386,7 @@ export default function DocumentEditor() {
     terms,
     bankInfo,
     notes,
+    shippingMark,
   };
 
   const isPL = type === 'pl';
@@ -523,6 +544,30 @@ export default function DocumentEditor() {
                   </div>
                 </div>
               </div>
+              <div className="space-y-1">
+                <Label className="text-xs">手写签名（用于签名处）</Label>
+                <div className="flex items-center gap-3">
+                  <div className="h-14 w-20 shrink-0 overflow-hidden rounded border bg-muted flex items-center justify-center">
+                    {seller.signatureImage ? (
+                      <img src={seller.signatureImage} alt="signature" className="h-full w-full object-contain" />
+                    ) : (
+                      <PenLine className="size-5 text-muted-foreground/40" />
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="file" accept="image/*" onChange={handleSignatureUpload} className="hidden" id="signature-upload" />
+                    <Button variant="outline" size="sm" onClick={() => document.getElementById('signature-upload')?.click()} disabled={uploadingSignature}>
+                      <Upload className="mr-1 size-3" />
+                      {uploadingSignature ? '上传中' : '上传签名'}
+                    </Button>
+                    {seller.signatureImage && (
+                      <Button variant="ghost" size="sm" onClick={() => setSeller({ ...seller, signatureImage: '' })}>
+                        <Trash2 className="size-3" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -561,7 +606,7 @@ export default function DocumentEditor() {
 
           {/* Items */}
           <Card>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between sticky top-0 z-10 bg-background border-b">
               <CardTitle className="text-sm">商品明细 ITEMS</CardTitle>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={openProductPicker}>
@@ -611,18 +656,18 @@ export default function DocumentEditor() {
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-xs">Qty</Label>
-                      <Input type="number" value={item.quantity} onChange={(e) => {
-                        const qty = Number(e.target.value);
-                        updateItem(item.id, 'quantity', qty);
-                        if (item.cbmPerUnit) {
-                          updateItem(item.id, 'totalCbm', Number((qty * Number(item.cbmPerUnit)).toFixed(4)));
-                        }
-                      }} />
-                    </div>
                     {!isPL ? (
                       <>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Qty</Label>
+                          <Input type="number" value={item.quantity} onChange={(e) => {
+                            const qty = Number(e.target.value);
+                            updateItem(item.id, 'quantity', qty);
+                            if (item.cbmPerUnit) {
+                              updateItem(item.id, 'totalCbm', Number((qty * Number(item.cbmPerUnit)).toFixed(4)));
+                            }
+                          }} />
+                        </div>
                         <div className="space-y-1">
                           <Label className="text-xs">CBM/CTN</Label>
                           <Input type="number" step="0.0001" value={item.cbmPerUnit} onChange={(e) => {
@@ -635,7 +680,7 @@ export default function DocumentEditor() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Total CBM</Label>
-                          <Input type="number" step="0.0001" value={item.totalCbm} onChange={(e) => updateItem(item.id, 'totalCbm', Number(e.target.value))} placeholder="总体积" />
+                          <Input type="number" step="0.0001" value={item.totalCbm} readOnly className="bg-muted cursor-not-allowed" placeholder="自动计算" />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Unit Price</Label>
@@ -645,24 +690,36 @@ export default function DocumentEditor() {
                     ) : (
                       <>
                         <div className="space-y-1">
-                          <Label className="text-xs">CTNs</Label>
-                          <Input type="number" value={item.cartons} onChange={(e) => updateItem(item.id, 'cartons', Number(e.target.value))} />
+                          <Label className="text-xs">Qty (CTN)</Label>
+                          <Input type="number" value={item.cartons} onChange={(e) => {
+                            const ctns = Number(e.target.value);
+                            updateItem(item.id, 'cartons', ctns);
+                            if (item.cbmPerUnit) {
+                              updateItem(item.id, 'cbm', Number((ctns * Number(item.cbmPerUnit)).toFixed(4)));
+                            }
+                          }} placeholder="箱数" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">CTN Size</Label>
-                          <Input value={item.ctnSize} onChange={(e) => updateItem(item.id, 'ctnSize', e.target.value)} placeholder="如 40x30x25" />
+                          <Label className="text-xs">CBM (m³/CTN)</Label>
+                          <Input type="number" step="0.0001" value={item.cbmPerUnit} onChange={(e) => {
+                            const cbm = Number(e.target.value);
+                            updateItem(item.id, 'cbmPerUnit', cbm);
+                            if (item.cartons) {
+                              updateItem(item.id, 'cbm', Number((Number(item.cartons) * cbm).toFixed(4)));
+                            }
+                          }} placeholder="单箱体积" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">G.W(kg)</Label>
-                          <Input type="number" step="0.01" value={item.grossWeight} onChange={(e) => updateItem(item.id, 'grossWeight', Number(e.target.value))} />
+                          <Label className="text-xs">N.W. (kg)</Label>
+                          <Input type="number" step="0.01" value={item.netWeight} onChange={(e) => updateItem(item.id, 'netWeight', Number(e.target.value))} placeholder="净重" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">N.W(kg)</Label>
-                          <Input type="number" step="0.01" value={item.netWeight} onChange={(e) => updateItem(item.id, 'netWeight', Number(e.target.value))} />
+                          <Label className="text-xs">G.W. (kg)</Label>
+                          <Input type="number" step="0.01" value={item.grossWeight} onChange={(e) => updateItem(item.id, 'grossWeight', Number(e.target.value))} placeholder="毛重" />
                         </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">CBM</Label>
-                          <Input type="number" step="0.001" value={item.cbm} onChange={(e) => updateItem(item.id, 'cbm', Number(e.target.value))} />
+                        <div className="space-y-1 col-span-2">
+                          <Label className="text-xs">Total CBM (m³)</Label>
+                          <Input type="number" step="0.001" value={item.cbm} readOnly className="bg-muted cursor-not-allowed" placeholder="自动计算" />
                         </div>
                       </>
                     )}
@@ -706,6 +763,24 @@ export default function DocumentEditor() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Shipping Mark - shown for CI and PL */}
+          {(type === 'ci' || type === 'pl') && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">唛头 SHIPPING MARK</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={shippingMark}
+                  onChange={(e) => setShippingMark(e.target.value)}
+                  rows={5}
+                  placeholder={'例如：\nMADE IN CHINA\nNO. 1-UP\nC/NO. 1-100\nG.W.: XX KGS\nN.W.: XX KGS\nMEAS.: XX CM'}
+                  className="font-mono text-xs"
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Bank Info - shown for PI and CI */}
           {(type === 'pi' || type === 'ci') && (
@@ -788,7 +863,6 @@ export default function DocumentEditor() {
           .print-area .document-preview { padding: 0 !important; max-width: 100% !important; background: white !important; }
           .print-area table { table-layout: auto !important; width: 100% !important; }
           .print-area img { object-fit: contain !important; }
-          .print-area * { background-color: transparent !important; }
           .print-area thead tr { background-color: #1F4E78 !important; }
           .print-area tbody tr:nth-child(even) { background-color: #f9fafb !important; }
           .print-area tfoot tr { background-color: transparent !important; }

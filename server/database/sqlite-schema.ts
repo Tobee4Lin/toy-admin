@@ -190,6 +190,7 @@ export const document = sqliteTable('document', {
   terms: text('terms', { mode: 'json' }),
   bankInfo: text('bank_info', { mode: 'json' }),
   notes: text('notes'),
+  shippingMark: text('shipping_mark'),
   totalAmount: text('total_amount'),
   currency: text('currency').default('USD'),
   status: text('status', { enum: ['draft', 'sent', 'confirmed'] }).default('draft'),

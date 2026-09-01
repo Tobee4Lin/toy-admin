@@ -27,6 +27,7 @@ export interface SellerInfo {
   address: string;
   logo?: string;
   sealImage?: string;
+  signatureImage?: string;
 }
 
 export interface BuyerInfo {
@@ -67,6 +68,7 @@ export interface DocumentData {
   terms?: DocumentTerms;
   bankInfo?: BankInfo;
   notes?: string;
+  shippingMark?: string;
   totalAmount?: string;
   currency?: string;
   status?: 'draft' | 'sent' | 'confirmed';
