@@ -1,4 +1,4 @@
-import { APP_FILTER } from '@nestjs/core';
+﻿import { APP_FILTER } from '@nestjs/core';
 import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { GlobalExceptionFilter } from './common/filters/exception.filter';
@@ -15,6 +15,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { CustomerModule } from './modules/customer/customer.module';
 import { DocumentModule } from './modules/document/document.module';
 import { AiModule } from './modules/ai/ai.module';
+import { MapsScraperModule } from './modules/maps-scraper/maps-scraper.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AiModule } from './modules/ai/ai.module';
     CustomerModule,
     DocumentModule,
     AiModule,
+    MapsScraperModule,
   ],
   providers: [
     {

@@ -559,5 +559,77 @@ export async function migrateAndSeed(): Promise<void> {
       .run();
   }
 
+  // Maps Scraper tables
+  db.run(`
+    CREATE TABLE IF NOT EXISTS maps_scraper_task (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      country TEXT NOT NULL,
+      state TEXT,
+      city TEXT,
+      keyword TEXT NOT NULL,
+      per_area INTEGER NOT NULL DEFAULT 10,
+      extract_email INTEGER NOT NULL DEFAULT 1,
+      status TEXT NOT NULL DEFAULT 'pending',
+      total_areas INTEGER NOT NULL DEFAULT 0,
+      completed_areas INTEGER NOT NULL DEFAULT 0,
+      failed_areas INTEGER NOT NULL DEFAULT 0,
+      total_results INTEGER NOT NULL DEFAULT 0,
+      logs TEXT NOT NULL DEFAULT '[]',
+      started_at INTEGER,
+      completed_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS maps_scraper_result (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id INTEGER NOT NULL,
+      keyword TEXT,
+      industry TEXT,
+      name TEXT NOT NULL,
+      address TEXT,
+      city TEXT,
+      state TEXT,
+      zip_code TEXT,
+      phone TEXT,
+      whatsapp TEXT,
+      email TEXT,
+      website TEXT,
+      rating TEXT,
+      reviews_count INTEGER,
+      latitude TEXT,
+      longitude TEXT,
+      added_to_customer INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS maps_scraper_preset (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      country TEXT NOT NULL,
+      state TEXT,
+      city TEXT,
+      keyword TEXT NOT NULL,
+      per_area INTEGER NOT NULL DEFAULT 10,
+      extract_email INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+
+  // Add whatsapp column to existing maps_scraper_result table
+  try {
+    const cols = db.all('PRAGMA table_info(maps_scraper_result)') as { name: string }[];
+    if (!cols.find((c) => c.name === 'whatsapp')) {
+      db.run('ALTER TABLE maps_scraper_result ADD COLUMN whatsapp TEXT');
+      logger.log('Added whatsapp column to maps_scraper_result table');
+    }
+  } catch {
+    /* table might not exist yet, ignore */
+  }
+
   logger.log('Database migrations completed successfully.');
 }

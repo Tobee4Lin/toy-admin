@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -10,10 +11,16 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  ChevronDown,
   Search,
   Brain,
   Send,
   Mail,
+  MapPin,
+  Layers,
+  Briefcase,
+  Sparkles,
+  BarChart3,
 } from "lucide-react";
 
 import {
@@ -22,12 +29,14 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Breadcrumb,
@@ -42,28 +51,175 @@ interface NavItem {
   icon: typeof LayoutDashboard;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { path: "/", label: "仪表盘", icon: LayoutDashboard },
-  { path: "/products", label: "产品管理", icon: Package },
-  { path: "/categories", label: "分类管理", icon: Tags },
-  { path: "/blog", label: "博客管理", icon: FileText },
-  { path: "/inquiries", label: "询盘管理", icon: MessageSquare },
-  { path: "/customers", label: "客户管理", icon: Users },
-  { path: "/documents", label: "单证管理", icon: ClipboardList },
-  { path: "/ai-lead", label: "AI获客", icon: Search },
-  { path: "/ai-intelligence", label: "AI背调", icon: Brain },
-  { path: "/ai-outreach", label: "AI开发", icon: Send },
-  { path: "/email-center", label: "邮箱中心", icon: Mail },
-  { path: "/settings", label: "系统设置", icon: Settings },
+interface NavGroup {
+  id: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    id: 'overview',
+    label: '工作台',
+    icon: BarChart3,
+    items: [
+      { path: "/", label: "仪表盘", icon: LayoutDashboard },
+    ],
+  },
+  {
+    id: 'product',
+    label: '产品中心',
+    icon: Package,
+    items: [
+      { path: "/products", label: "产品管理", icon: Package },
+      { path: "/categories", label: "分类管理", icon: Tags },
+    ],
+  },
+  {
+    id: 'content',
+    label: '内容管理',
+    icon: FileText,
+    items: [
+      { path: "/blog", label: "博客管理", icon: FileText },
+    ],
+  },
+  {
+    id: 'business',
+    label: '业务管理',
+    icon: Briefcase,
+    items: [
+      { path: "/inquiries", label: "询盘管理", icon: MessageSquare },
+      { path: "/customers", label: "客户管理", icon: Users },
+    ],
+  },
+  {
+    id: 'document',
+    label: '单证工具',
+    icon: ClipboardList,
+    items: [
+      { path: "/documents", label: "单证管理", icon: ClipboardList },
+    ],
+  },
+  {
+    id: 'ai',
+    label: 'AI 获客',
+    icon: Sparkles,
+    items: [
+      { path: "/ai-lead", label: "AI获客", icon: Search },
+      { path: "/ai-intelligence", label: "AI背调", icon: Brain },
+      { path: "/ai-outreach", label: "AI开发", icon: Send },
+      { path: "/email-center", label: "邮箱中心", icon: Mail },
+      { path: "/maps-scraper", label: "地图采集", icon: MapPin },
+    ],
+  },
+  {
+    id: 'system',
+    label: '系统',
+    icon: Settings,
+    items: [
+      { path: "/settings", label: "系统设置", icon: Settings },
+    ],
+  },
 ];
 
+// Flatten for title lookup
+const ALL_ITEMS: NavItem[] = NAV_GROUPS.flatMap(g => g.items);
+
 function getTitleByPath(pathname: string): string {
-  const match = NAV_ITEMS.find((item: NavItem) => {
+  const match = ALL_ITEMS.find((item: NavItem) => {
     if (item.path === "/") return pathname === "/";
     return pathname.startsWith(item.path);
   });
   return match?.label ?? "管理后台";
 }
+
+function getGroupByPath(pathname: string): string {
+  for (const group of NAV_GROUPS) {
+    if (group.items.some(item => item.path === "/" ? pathname === "/" : pathname.startsWith(item.path))) {
+      return group.id;
+    }
+  }
+  return '';
+}
+
+const NavGroupComponent = ({ group, pathname }: { group: NavGroup; pathname: string }) => {
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
+  const activeGroup = getGroupByPath(pathname);
+  const [open, setOpen] = useState(activeGroup === group.id);
+
+  useEffect(() => {
+    if (activeGroup === group.id) setOpen(true);
+  }, [activeGroup, group.id]);
+
+  const hasActiveChild = group.items.some(item =>
+    item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)
+  );
+
+  // Single item group: show as direct link
+  if (group.items.length === 1) {
+    const item = group.items[0];
+    const isActive = item.path === "/" ? pathname === "/" : pathname.startsWith(item.path);
+    return (
+      <SidebarMenuItem key={group.id}>
+        <SidebarMenuButton asChild isActive={isActive} className="relative">
+          <Link to={item.path}>
+            {isActive && (
+              <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-primary" />
+            )}
+            <item.icon className="size-4" />
+            <span>{item.label}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
+
+  // Multi-item group: collapsible
+  return (
+    <SidebarMenuItem key={group.id}>
+      <SidebarMenuButton
+        onClick={() => setOpen(!open)}
+        isActive={hasActiveChild}
+        className="relative cursor-pointer"
+      >
+        {hasActiveChild && (
+          <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-primary" />
+        )}
+        <group.icon className="size-4" />
+        <span className="flex-1 text-left">{group.label}</span>
+        {!isCollapsed && (
+          <ChevronDown className={`size-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        )}
+      </SidebarMenuButton>
+      {open && !isCollapsed && (
+        <div className="ml-4 mt-1 space-y-0.5 border-l border-border pl-2">
+          {group.items.map((item) => {
+            const isActive = item.path === "/" ? pathname === "/" : pathname.startsWith(item.path);
+            return (
+              <SidebarMenuButton
+                key={item.path}
+                asChild
+                isActive={isActive}
+                size="sm"
+                className="relative"
+              >
+                <Link to={item.path}>
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r bg-primary" />
+                  )}
+                  <item.icon className="size-3.5" />
+                  <span className="text-xs">{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            );
+          })}
+        </div>
+      )}
+    </SidebarMenuItem>
+  );
+};
 
 const LayoutContent = () => {
   const { pathname } = useLocation();
@@ -95,29 +251,9 @@ const LayoutContent = () => {
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                {NAV_ITEMS.map((item: NavItem) => {
-                  const isActive =
-                    item.path === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(item.path);
-                  return (
-                    <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        className="relative"
-                      >
-                        <Link to={item.path}>
-                          {isActive && (
-                            <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-primary" />
-                          )}
-                          <item.icon className="size-4" />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                {NAV_GROUPS.map((group) => (
+                  <NavGroupComponent key={group.id} group={group} pathname={pathname} />
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

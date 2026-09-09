@@ -382,3 +382,73 @@ export const aiIntelligenceReportTable = aiIntelligenceReport;
 export const aiOutreachTable = aiOutreach;
 export const emailAccountTable = emailAccount;
 export const emailMessageTable = emailMessage;
+
+// Maps Scraper
+export const mapsScraperTask = sqliteTable('maps_scraper_task', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  country: text('country').notNull(),
+  state: text('state'),
+  city: text('city'),
+  keyword: text('keyword').notNull(),
+  perArea: integer('per_area').notNull().default(10),
+  extractEmail: integer('extract_email', { mode: 'boolean' }).notNull().default(true),
+  status: text('status', { enum: ['pending', 'running', 'completed', 'failed', 'stopped'] }).notNull().default('pending'),
+  totalAreas: integer('total_areas').notNull().default(0),
+  completedAreas: integer('completed_areas').notNull().default(0),
+  failedAreas: integer('failed_areas').notNull().default(0),
+  totalResults: integer('total_results').notNull().default(0),
+  logs: text('logs', { mode: 'json' }).notNull().default('[]'),
+  startedAt: integer('started_at', { mode: 'timestamp_ms' }),
+  completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+}, (table) => [
+  index('idx_maps_task_status').on(table.status),
+]);
+
+export const mapsScraperResult = sqliteTable('maps_scraper_result', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  taskId: integer('task_id').notNull(),
+  keyword: text('keyword'),
+  industry: text('industry'),
+  name: text('name').notNull(),
+  address: text('address'),
+  city: text('city'),
+  state: text('state'),
+  zipCode: text('zip_code'),
+  phone: text('phone'),
+  whatsapp: text('whatsapp'),
+  email: text('email'),
+  website: text('website'),
+  rating: text('rating'),
+  reviewsCount: integer('reviews_count'),
+  latitude: text('latitude'),
+  longitude: text('longitude'),
+  addedToCustomer: integer('added_to_customer', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+}, (table) => [
+  index('idx_maps_result_task').on(table.taskId),
+  index('idx_maps_result_name').on(table.name),
+]);
+
+export const mapsScraperPreset = sqliteTable('maps_scraper_preset', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  country: text('country').notNull(),
+  state: text('state'),
+  city: text('city'),
+  keyword: text('keyword').notNull(),
+  perArea: integer('per_area').notNull().default(10),
+  extractEmail: integer('extract_email', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+export const mapsScraperTaskTable = mapsScraperTask;
+export const mapsScraperResultTable = mapsScraperResult;
+export const mapsScraperPresetTable = mapsScraperPreset;

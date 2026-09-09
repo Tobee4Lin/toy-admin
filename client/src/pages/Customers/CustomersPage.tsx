@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Users,
   UserPlus,
@@ -95,6 +95,7 @@ const SOURCE_LABELS: Record<string, string> = {
   google: '谷歌开发',
   alibaba: '阿里询盘',
   referral: '朋友推荐',
+  maps_scraper: '地图采集',
   other: '其他',
 };
 
@@ -383,22 +384,29 @@ function EditCustomerDialog({
                   const value = (form as any)[key] || '';
                   const invalid = form.contactInvalid?.[key];
                   return (
-                    <div key={key} className={`flex items-start gap-3 rounded-lg border p-3 ${invalid ? 'border-red-200 bg-red-50' : 'border-border'}`}>
-                      <Icon className="mt-0.5 h-4 w-4 text-muted-foreground shrink-0" />
+                    <div key={key} className={`relative flex items-start gap-3 rounded-lg border p-3 transition-colors ${invalid ? 'border-gray-200 bg-gray-50 opacity-70' : 'border-border hover:border-gray-300'}`}>
+                      {invalid && (
+                        <span className="absolute -top-2 left-3 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                          已失效
+                        </span>
+                      )}
+                      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${invalid ? 'text-gray-400' : 'text-muted-foreground'}`} />
                       <div className="flex-1 min-w-0">
-                        <Label className="text-xs text-muted-foreground">{label}</Label>
+                        <Label className={`text-xs ${invalid ? 'text-gray-400 line-through' : 'text-muted-foreground'}`}>{label}</Label>
                         <Input
                           value={value}
                           onChange={(e) => updateField(key, e.target.value)}
-                          className="mt-1 h-8"
+                          className={`mt-1 h-8 ${invalid ? 'text-gray-400 line-through bg-gray-100' : ''}`}
                           placeholder={`输入${label}`}
+                          disabled={invalid}
                         />
                       </div>
                       <button
                         onClick={() => toggleContactInvalid(key)}
-                        className={`shrink-0 text-xs font-medium px-2 py-1 rounded mt-5 ${invalid ? 'text-green-600 hover:bg-green-50' : 'text-red-500 hover:bg-red-50'}`}
+                        title={invalid ? '点击恢复为有效联系方式' : '点击标记此联系方式为无效（如号码已停用、邮箱不存在等）'}
+                        className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-md mt-5 transition-colors ${invalid ? 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200' : 'bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-200 border border-transparent'}`}
                       >
-                        {invalid ? '恢复' : '失效'}
+                        {invalid ? '恢复有效' : '标记无效'}
                       </button>
                     </div>
                   );
