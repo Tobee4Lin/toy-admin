@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseGuards, UseInterceptors, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { AuthGuard } from '@nestjs/passport';
 import { VideoMarketingService, type VideoTask, type CreateVideoTaskDto, type VideoTaskStatus } from './video-marketing.service';
 
@@ -37,5 +39,25 @@ export class VideoMarketingController {
   @Get('service/status')
   async checkService(): Promise<{ available: boolean; baseUrl: string }> {
     return this.videoMarketingService.checkService();
+  }
+
+  @Get('materials')
+  @UseGuards(AuthGuard('jwt'))
+  async listMaterials(): Promise<Array<{ name: string; size: number; file: string }>> {
+    return this.videoMarketingService.listMaterials();
+  }
+
+  @Post('materials/upload')
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('file', {
+    storage: memoryStorage(),
+    limits: { fileSize: 100 * 1024 * 1024 },
+  }))
+  async uploadMaterial(@UploadedFile() file: Express.Multer.File): Promise<{ file: string }> {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('No file uploaded or file is empty');
+    }
+    const stored = await this.videoMarketingService.uploadMaterial(file.buffer, file.originalname);
+    return { file: stored };
   }
 }

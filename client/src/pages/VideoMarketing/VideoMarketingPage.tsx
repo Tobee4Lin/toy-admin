@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Video, Plus, Play, RefreshCw, Trash2, Download, Clock,
   CheckCircle2, XCircle, Loader2, Film, Music, Subtitles,
-  Globe, Sparkles, ChevronDown, ChevronUp, Copy, ExternalLink,
+  Globe, Sparkles, ChevronDown, ChevronUp, Copy, ExternalLink, Upload, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -23,7 +23,7 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
-  getVideoTasks, createVideoTask, refreshVideoTask, deleteVideoTask, checkMptService,
+  getVideoTasks, createVideoTask, refreshVideoTask, deleteVideoTask, checkMptService, uploadVideoMaterial,
   type VideoTask, type VideoTaskStatus, type AspectRatio,
 } from '@/api/video-marketing';
 
@@ -73,6 +73,9 @@ export default function VideoMarketingPage() {
   const [formBgm, setFormBgm] = useState(true);
   const [formVideoCount, setFormVideoCount] = useState(1);
   const [formParagraph, setFormParagraph] = useState(3);
+  const [localMaterials, setLocalMaterials] = useState<string[]>([]);
+  const [uploadingMaterial, setUploadingMaterial] = useState(false);
+  const [clipDuration, setClipDuration] = useState(5);
   const [submitting, setSubmitting] = useState(false);
 
   const loadTasks = useCallback(async () => {
@@ -136,6 +139,8 @@ export default function VideoMarketingPage() {
         bgmEnabled: formBgm,
         videoCount: formVideoCount,
         paragraphCount: formParagraph,
+        localMaterials: localMaterials.length > 0 ? localMaterials : undefined,
+        clipDuration,
       });
       toast.success('任务已创建', { description: '视频生成中，请稍候...' });
       setCreateOpen(false);
@@ -158,6 +163,32 @@ export default function VideoMarketingPage() {
     setFormBgm(true);
     setFormVideoCount(1);
     setFormParagraph(3);
+    setLocalMaterials([]);
+    setClipDuration(5);
+  };
+
+  const handleUploadMaterial = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingMaterial(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files)) {
+        const res = await uploadVideoMaterial(file);
+        uploaded.push(res.file);
+      }
+      setLocalMaterials((prev) => [...prev, ...uploaded]);
+      toast.success(`已上传 ${uploaded.length} 个素材`);
+    } catch (err) {
+      toast.error('上传失败', { description: err instanceof Error ? err.message : '请稍后重试' });
+    } finally {
+      setUploadingMaterial(false);
+      e.target.value = '';
+    }
+  };
+
+  const removeMaterial = (file: string) => {
+    setLocalMaterials((prev) => prev.filter((f) => f !== file));
   };
 
   const handleDelete = async (id: number) => {
@@ -546,6 +577,66 @@ export default function VideoMarketingPage() {
                       <Switch id="bgm" checked={formBgm} onCheckedChange={setFormBgm} />
                       <Label htmlFor="bgm" className="cursor-pointer">背景音乐</Label>
                     </div>
+                  </div>
+
+                  {/* 本地素材上传 */}
+                  <div className="border-t pt-4">
+                    <Label className="flex items-center gap-1.5">
+                      <Upload className="h-3.5 w-3.5" />
+                      自定义视频素材（可选）
+                    </Label>
+                    <p className="text-xs text-gray-500 mt-1 mb-2">
+                      上传自己的视频/图片素材，使用本地素材生成视频，无需 Pexels API Key。支持 mp4/mov/avi/webm 等格式。
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 rounded cursor-pointer transition-colors">
+                        <Upload className="h-3.5 w-3.5" />
+                        {uploadingMaterial ? '上传中...' : '上传素材'}
+                        <input
+                          type="file"
+                          accept="video/*,image/*"
+                          multiple
+                          className="hidden"
+                          onChange={handleUploadMaterial}
+                          disabled={uploadingMaterial}
+                        />
+                      </label>
+                      {localMaterials.length > 0 && (
+                        <span className="text-xs text-green-600">已选 {localMaterials.length} 个素材</span>
+                      )}
+                    </div>
+                    {localMaterials.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {localMaterials.map((f) => (
+                          <span
+                            key={f}
+                            className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"
+                          >
+                            <Film className="h-3 w-3" />
+                            {f.length > 20 ? f.slice(0, 20) + '...' : f}
+                            <button
+                              onClick={() => removeMaterial(f)}
+                              className="hover:text-red-500 ml-0.5"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {localMaterials.length > 0 && (
+                      <div className="mt-2">
+                        <Label className="text-xs">每段素材时长（秒）</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={30}
+                          value={clipDuration}
+                          onChange={(e) => setClipDuration(Math.max(1, parseInt(e.target.value) || 5))}
+                          className="mt-1 w-24"
+                        />
+                      </div>
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>

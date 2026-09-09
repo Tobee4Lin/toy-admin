@@ -53,6 +53,8 @@ export interface CreateVideoTaskDto {
   videoCount?: number;
   paragraphCount?: number;
   relatedProductId?: number;
+  localMaterials?: string[]; // 本地上传的视频素材文件名列表
+  clipDuration?: number; // 每个素材片段时长（秒）
 }
 
 @Injectable()
@@ -102,7 +104,7 @@ export class VideoMarketingService {
     const task = this.toTask(inserted[0]);
 
     // 异步启动生成
-    this.startGeneration(task.id).catch((err) => {
+    this.startGeneration(task.id, dto.localMaterials || [], dto.clipDuration || 5).catch((err) => {
       this.logger.error(`Failed to start generation for task ${task.id}: ${err.message}`);
     });
 
@@ -110,7 +112,7 @@ export class VideoMarketingService {
   }
 
   /** 启动视频生成（调用 MoneyPrinterTurbo API） */
-  private async startGeneration(taskId: number): Promise<void> {
+  private async startGeneration(taskId: number, localMaterials: string[] = [], clipDuration: number = 5): Promise<void> {
     const task = await this.findOne(taskId);
     const logs = [...(task.logs || []), '🚀 开始调用 MoneyPrinterTurbo API...'];
 
@@ -132,6 +134,7 @@ export class VideoMarketingService {
       });
 
       // 构建参数（MPT 使用 snake_case 字段名）
+      const useLocal = localMaterials.length > 0;
       const params: MptVideoParams = {
         video_subject: task.subject,
         video_aspect: task.aspectRatio,
@@ -141,17 +144,28 @@ export class VideoMarketingService {
         voice_rate: parseFloat(task.voiceRate || '1.0'),
         subtitle_enabled: task.subtitleEnabled,
         bgm_type: task.bgmEnabled ? 'random' : 'none',
-        video_source: task.materialSource || 'pexels',
+        video_source: useLocal ? 'local' : (task.materialSource || 'pexels'),
         video_language: task.voiceLanguage || 'en-US',
       };
+
+      // 本地素材模式
+      if (useLocal) {
+        params.video_materials = localMaterials.map((f) => ({ provider: 'local', url: f }));
+        params.video_clip_duration = clipDuration;
+        await this.updateTask(taskId, {
+          logs: [...(await this.getLogs(taskId)), `📁 使用本地素材 ${localMaterials.length} 个，每段 ${clipDuration} 秒`],
+        });
+      }
 
       // 始终提供 video_script，避免 MPT 调用 LLM 生成脚本（需要 API Key）
       // 如果用户未填写自定义脚本，则根据主题自动生成一个简单脚本
       const script = task.videoScript || this.generateDefaultScript(task.subject, task.paragraphCount);
       params.video_script = script;
-      // 同时提供素材关键词，避免调用 LLM 提取关键词
-      const terms = this.extractKeywords(task.subject);
-      params.video_terms = terms;
+      // 同时提供素材关键词，避免调用 LLM 提取关键词（本地素材模式不需要）
+      if (!useLocal) {
+        const terms = this.extractKeywords(task.subject);
+        params.video_terms = terms;
+      }
 
       const mptTaskId = await client.createVideo(params);
       this.logger.log(`MPT task created: ${mptTaskId}`);
@@ -285,6 +299,18 @@ export class VideoMarketingService {
     const client = getMptClient(baseUrl);
     const available = await client.healthCheck();
     return { available, baseUrl };
+  }
+
+  /** 上传视频素材到 MPT */
+  async uploadMaterial(buffer: Buffer, filename: string): Promise<string> {
+    const client = getMptClient(process.env.MPT_API_URL);
+    return client.uploadVideoMaterial(buffer, filename);
+  }
+
+  /** 获取已上传的视频素材列表 */
+  async listMaterials(): Promise<Array<{ name: string; size: number; file: string }>> {
+    const client = getMptClient(process.env.MPT_API_URL);
+    return client.listVideoMaterials();
   }
 
   // --- 内部方法 ---

@@ -48,6 +48,14 @@ export interface CreateVideoTaskDto {
   videoCount?: number;
   paragraphCount?: number;
   relatedProductId?: number;
+  localMaterials?: string[];
+  clipDuration?: number;
+}
+
+export interface VideoMaterial {
+  name: string;
+  size: number;
+  file: string;
 }
 
 export interface ServiceStatus {
@@ -82,5 +90,17 @@ export async function deleteVideoTask(id: number): Promise<{ success: boolean }>
 
 export async function checkMptService(): Promise<ServiceStatus> {
   const res = await http.get('/api/video-marketing/service/status');
+  return res.data;
+}
+
+export async function uploadVideoMaterial(file: File): Promise<{ file: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await http.post('/api/video-marketing/materials/upload', formData);
+  return res.data;
+}
+
+export async function listVideoMaterials(): Promise<VideoMaterial[]> {
+  const res = await http.get('/api/video-marketing/materials');
   return res.data;
 }

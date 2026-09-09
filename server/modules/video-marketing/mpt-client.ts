@@ -30,6 +30,8 @@ export interface MptVideoParams {
   bgm_volume?: number;
   video_source?: string;
   video_language?: string;
+  video_materials?: Array<{ provider: string; url: string; duration?: number }>;
+  video_clip_duration?: number;
   [key: string]: unknown;
 }
 
@@ -102,6 +104,37 @@ export class MoneyPrinterTurboClient {
       throw new Error(`MoneyPrinterTurbo API error: ${data.message || 'Unknown error'}`);
     }
     return data.data.task_id;
+  }
+
+  /** 上传视频素材到 MPT（返回存储的文件名） */
+  async uploadVideoMaterial(buffer: Buffer, filename: string): Promise<string> {
+    const formData = new FormData();
+    const blob = new Blob([new Uint8Array(buffer)]);
+    formData.append('file', blob, filename);
+    const res = await fetch(`${this.baseUrl}/api/v1/video_materials`, {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(this.timeout),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`MPT upload error ${res.status}: ${text}`);
+    }
+    const data = await res.json() as { status: number; data: { file: string } };
+    if (data.status !== 200 || !data.data?.file) {
+      throw new Error(`MPT upload error: unexpected response ${JSON.stringify(data)}`);
+    }
+    return data.data.file;
+  }
+
+  /** 获取已上传的视频素材列表 */
+  async listVideoMaterials(): Promise<Array<{ name: string; size: number; file: string }>> {
+    const res = await fetch(`${this.baseUrl}/api/v1/video_materials`, {
+      signal: AbortSignal.timeout(this.timeout),
+    });
+    if (!res.ok) return [];
+    const data = await res.json() as { status: number; data: { files: Array<{ name: string; size: number; file: string }> } };
+    return data.data?.files || [];
   }
 
   /** 查询任务状态 */
