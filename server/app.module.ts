@@ -16,6 +16,7 @@ import { CustomerModule } from './modules/customer/customer.module';
 import { DocumentModule } from './modules/document/document.module';
 import { AiModule } from './modules/ai/ai.module';
 import { MapsScraperModule } from './modules/maps-scraper/maps-scraper.module';
+import { VideoMarketingModule } from './modules/video-marketing/video-marketing.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { MapsScraperModule } from './modules/maps-scraper/maps-scraper.module';
     DocumentModule,
     AiModule,
     MapsScraperModule,
+    VideoMarketingModule,
   ],
   providers: [
     {

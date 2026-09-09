@@ -452,3 +452,40 @@ export const mapsScraperPreset = sqliteTable('maps_scraper_preset', {
 export const mapsScraperTaskTable = mapsScraperTask;
 export const mapsScraperResultTable = mapsScraperResult;
 export const mapsScraperPresetTable = mapsScraperPreset;
+
+// Video Marketing (MoneyPrinterTurbo)
+export const videoTask = sqliteTable('video_task', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  title: text('title').notNull(),
+  subject: text('subject').notNull(),
+  videoScript: text('video_script'),
+  aspectRatio: text('aspect_ratio', { enum: ['9:16', '16:9', '1:1'] }).notNull().default('9:16'),
+  voiceProvider: text('voice_provider').default('edge'),
+  voiceName: text('voice_name'),
+  voiceLanguage: text('voice_language').default('en-US'),
+  voiceRate: text('voice_rate').default('1.0'),
+  subtitleEnabled: integer('subtitle_enabled', { mode: 'boolean' }).notNull().default(true),
+  bgmEnabled: integer('bgm_enabled', { mode: 'boolean' }).notNull().default(true),
+  materialSource: text('material_source').default('pexels'),
+  videoCount: integer('video_count').notNull().default(1),
+  paragraphCount: integer('paragraph_count').notNull().default(3),
+  relatedProductId: integer('related_product_id'),
+  mptTaskId: text('mpt_task_id'),
+  status: text('status', { enum: ['pending', 'generating', 'completed', 'failed', 'cancelled'] }).notNull().default('pending'),
+  progress: integer('progress').notNull().default(0),
+  videoUrl: text('video_url'),
+  videoPath: text('video_path'),
+  coverUrl: text('cover_url'),
+  duration: integer('duration'),
+  errorMessage: text('error_message'),
+  logs: text('logs', { mode: 'json' }).notNull().default('[]'),
+  startedAt: integer('started_at', { mode: 'timestamp_ms' }),
+  completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+}, (table) => [
+  index('idx_video_task_status').on(table.status),
+]);
+
+export const videoTaskTable = videoTask;

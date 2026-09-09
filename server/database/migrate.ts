@@ -631,5 +631,39 @@ export async function migrateAndSeed(): Promise<void> {
     /* table might not exist yet, ignore */
   }
 
+  // Video Marketing tables
+  db.run(`
+    CREATE TABLE IF NOT EXISTS video_task (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      video_script TEXT,
+      aspect_ratio TEXT NOT NULL DEFAULT '9:16',
+      voice_provider TEXT DEFAULT 'edge',
+      voice_name TEXT,
+      voice_language TEXT DEFAULT 'en-US',
+      voice_rate TEXT DEFAULT '1.0',
+      subtitle_enabled INTEGER NOT NULL DEFAULT 1,
+      bgm_enabled INTEGER NOT NULL DEFAULT 1,
+      material_source TEXT DEFAULT 'pexels',
+      video_count INTEGER NOT NULL DEFAULT 1,
+      paragraph_count INTEGER NOT NULL DEFAULT 3,
+      related_product_id INTEGER,
+      mpt_task_id TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      progress INTEGER NOT NULL DEFAULT 0,
+      video_url TEXT,
+      video_path TEXT,
+      cover_url TEXT,
+      duration INTEGER,
+      error_message TEXT,
+      logs TEXT NOT NULL DEFAULT '[]',
+      started_at INTEGER,
+      completed_at INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+  db.run('CREATE INDEX IF NOT EXISTS idx_video_task_status ON video_task(status)');
+
   logger.log('Database migrations completed successfully.');
 }

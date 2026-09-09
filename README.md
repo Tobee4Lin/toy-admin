@@ -1,6 +1,6 @@
 # Toy Admin Dashboard — 玩具B2B后台管理系统
 
-国际B2B玩具采购网站配套的后台管理系统，支持产品管理、分类管理、博客管理、询盘管理、客户管理CRM、数据导出与前台同步。
+国际B2B玩具采购网站配套的后台管理系统，支持产品管理、分类管理、博客管理、询盘管理、客户管理CRM、单证生成、AI获客、地图采集、短视频营销等功能。
 
 ## 技术栈
 
@@ -15,12 +15,13 @@
 | 状态管理 | TanStack Query + Zustand |
 | 表单 | React Hook Form + Zod |
 | 图表 | ECharts / Recharts |
+| 浏览器自动化 | Playwright（地图采集） |
 | 语言 | TypeScript（严格模式） |
 
 ## 功能模块
 
 ### 仪表盘 Dashboard
-- 核心数据统计（产品数、分类数、博客数、询盘数）
+- 核心数据统计（产品数、分类数、博客数、询盘数、客户数）
 - 最近询盘列表
 - 数据趋势图表
 
@@ -30,6 +31,7 @@
 - 产品规格、MOQ、包装信息、交期
 - 推荐产品切换
 - 批量删除
+- **批量Excel导入**（下载模板，填写后上传识别）
 
 ### 分类管理 Categories
 - 分类 CRUD
@@ -60,6 +62,44 @@
 - **从询盘批量导入**客户（勾选询盘，自动去重）
 - **导出Excel**（CSV带BOM，Excel打开中文不乱码）
 
+### 单证工具 Documents
+- 支持 **报价单 Quotation**、**PI 形式发票**、**CI 商业发票**、**PL 装箱单** 四种单证
+- 单证信息、卖方信息、条款自动缓存，无需重复填写
+- 产品可从产品管理库直接选择导入
+- 支持上传公司印章和手写签名，自动覆盖在签名处
+- 银行账户信息、付款条款（Deposit 30% / Balance 70%）、Amount in Words
+- 装箱单自动计算 Total Cartons、Total Net Weight、Total Gross Weight、Total Volume
+- 打印样式优化（A4尺寸、纯白背景、无边框阴影）
+- 单证列表管理、编辑、删除
+
+### AI 获客 AI Lead
+- AI 自动获客：输入产品名称、关键词、目标国家、客户类型，自动生成潜在客户
+- AI 客户背调：输入公司名或网站，生成完整客户情报报告
+- AI 自主开发：根据客户信息个性化生成开发信（Cold Email / LinkedIn / WhatsApp）
+- 邮箱管理中心：连接 Gmail/Outlook/SMTP，AI 识别回复分类并生成建议回复
+
+### 地图采集 Maps Scraper
+- 基于 **Playwright** 真实采集 Google Maps 商家数据
+- 支持按国家、州/省、城市、关键词采集
+- 关键词下拉框（32个玩具行业选项）+ 自定义输入
+- 采集字段：公司名、地址、城市、电话、WhatsApp、邮箱、网站、评分、评论数
+- 实时进度条、运行日志、采集结果表格
+- 批量选择、批量添加到客户管理
+- 导出 Excel（带样式）
+- 采集预设保存与加载
+- WhatsApp 与电话重复时自动隐藏
+- 邮箱自动过滤无效内容（图片扩展名等）
+
+### 短视频营销 Video Marketing
+- 对接 **MoneyPrinterTurbo** AI 视频生成服务
+- **无需 LLM API Key**：未填写自定义脚本时自动根据主题生成默认脚本，跳过 LLM 调用
+- 画幅选择：9:16 竖屏（TikTok/Shorts）、16:9 横屏（YouTube）、1:1 方形
+- 8种多语言 AI 配音（英/西/法/德/日/阿，Edge TTS 免费）
+- 自动字幕、背景音乐开关
+- 任务列表：视频预览、状态、进度条、运行日志
+- 自动轮询生成状态，失败任务支持重试
+- 素材来源：Pexels（需配置免费 API Key）
+
 ### 数据导出 Export
 - 一键同步产品/分类/博客数据到前台项目 `src/data/` 目录
 - 自动复制上传图片到前台 `public/images/uploads/`
@@ -68,6 +108,7 @@
 ### 系统设置 Settings
 - 前台数据目录配置
 - 一键同步到前台
+- 数据导出（产品/分类/博客 Excel）
 
 ## 项目结构
 
@@ -75,7 +116,7 @@
 .
 ├── client/                    # 前端 React 应用
 │   ├── src/
-│   │   ├── api/              # API 客户端（products, categories, blog, inquiries, customers）
+│   │   ├── api/              # API 客户端
 │   │   ├── components/       # 通用组件 + 布局 + UI组件
 │   │   ├── pages/            # 页面组件
 │   │   │   ├── Dashboard/
@@ -84,6 +125,13 @@
 │   │   │   ├── Blog/
 │   │   │   ├── Inquiries/
 │   │   │   ├── Customers/    # 客户管理CRM
+│   │   │   ├── Documents/    # 单证工具
+│   │   │   ├── AiLead/       # AI获客
+│   │   │   ├── AiIntelligence/ # AI背调
+│   │   │   ├── AiOutreach/   # AI开发
+│   │   │   ├── EmailCenter/  # 邮箱中心
+│   │   │   ├── MapsScraper/  # 地图采集
+│   │   │   ├── VideoMarketing/ # 短视频营销
 │   │   │   ├── Settings/
 │   │   │   └── Login/
 │   │   ├── utils/            # 工具函数（http, auth）
@@ -97,6 +145,10 @@
 │   │   ├── blog-post/        # 博客
 │   │   ├── inquiry/          # 询盘
 │   │   ├── customer/         # 客户CRM
+│   │   ├── document/         # 单证工具
+│   │   ├── ai/               # AI获客四模块
+│   │   ├── maps-scraper/     # 地图采集（Playwright）
+│   │   ├── video-marketing/  # 短视频营销（MPT对接）
 │   │   ├── dashboard/        # 仪表盘统计
 │   │   ├── export/           # 数据导出/同步到前台
 │   │   ├── upload/           # 文件上传
@@ -124,6 +176,8 @@
 - **Node.js** >= 18.0.0（推荐 20.x）
 - **npm** >= 9.0.0
 - 无需安装 Python（better-sqlite3 使用预编译二进制）
+- **Playwright Chromium**（地图采集功能需要，运行 `npx playwright install chromium`）
+- **MoneyPrinterTurbo**（短视频营销功能需要，可选）
 
 > ⚠️ 不要使用 Node 22+，better-sqlite3@11 在 Node 20 下稳定运行。
 
@@ -135,7 +189,13 @@
 npm install
 ```
 
-### 2. 配置环境变量
+### 2. 安装 Playwright 浏览器（地图采集功能需要）
+
+```bash
+npx playwright install chromium
+```
+
+### 3. 配置环境变量
 
 复制 `.env.example` 为 `.env`（如不存在则手动创建）：
 
@@ -153,9 +213,12 @@ FRONTEND_UPLOAD_DIR=C:\path\to\toy-website\public\images\uploads
 
 # 上传目录
 UPLOAD_DIR=./server/public/uploads
+
+# MoneyPrinterTurbo API 地址（短视频营销功能，可选）
+MPT_API_URL=http://127.0.0.1:8081
 ```
 
-### 3. 启动开发服务器
+### 4. 启动开发服务器
 
 ```bash
 # 方式一：通过 npm（推荐）
@@ -171,7 +234,7 @@ node dev.js
 - 前端管理后台：http://localhost:8080
 - 后端 API：http://localhost:3000
 
-### 4. 默认账号
+### 5. 默认账号
 
 ```
 用户名：admin
@@ -179,6 +242,81 @@ node dev.js
 ```
 
 首次启动会自动创建数据库表和默认管理员账号。
+
+## MoneyPrinterTurbo 安装（短视频营销）
+
+短视频营销功能需要单独部署 MoneyPrinterTurbo 服务。
+
+### 1. 安装 Python 3.11
+
+从 https://www.python.org/downloads/release/python-3119/ 下载 **Windows installer (64-bit)**，安装时勾选 **Add Python to PATH**。
+
+> ⚠️ 必须下载 .exe 安装包，不要下载源码包（含 configure/Makefile 的是 Linux 用的）。
+
+### 2. 克隆并安装依赖
+
+```bash
+git clone https://github.com/harry0703/MoneyPrinterTurbo.git
+cd MoneyPrinterTurbo
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 3. 修改配置文件
+
+编辑 `MoneyPrinterTurbo/config.toml`：
+
+```toml
+# 端口改为 8081，避免与后台前端 8080 冲突
+listen_port = 8081
+
+# 日志级别改为 INFO，能看到启动信息
+log_level = "INFO"
+
+# Pexels API Key（必须配置，用于下载视频素材）
+# 免费申请：https://www.pexels.com/api/
+pexels_api_keys = ["你的pexels_api_key"]
+```
+
+> ⚠️ Pexels API Key 是必须的，否则视频生成会失败（`pexels_api_keys is not set`）。申请时 Project Description 至少 50 字符，可参考：
+> "This API key is used in an internal toy business admin dashboard to generate short marketing videos. MoneyPrinterTurbo searches Pexels for stock footage based on product keywords such as bubble toys, remote control cars, building blocks, and beach toys."
+
+### 4. 修复 asgi.py（避免 WebSocket 断言错误）
+
+MPT 原版 `app/asgi.py` 末尾把 StaticFiles 挂载在根路径 `/`，会导致 WebSocket 请求触发 `assert scope["type"] == "http"` 错误。需要注释掉根路径挂载：
+
+```python
+# 文件：app/asgi.py 末尾
+task_dir = utils.task_dir()
+app.mount("/tasks", StaticFiles(directory=task_dir, html=True), name="tasks")
+
+# 注释掉下面这两行（根路径 StaticFiles 挂载）
+# public_dir = utils.public_dir()
+# app.mount("/", StaticFiles(directory=public_dir, html=True), name="")
+```
+
+### 5. 启动 API 服务
+
+```bash
+cd MoneyPrinterTurbo
+.venv\Scripts\activate
+python main.py
+```
+
+看到 `Uvicorn running on http://0.0.0.0:8081` 即启动成功。
+
+> 注意：必须先激活虚拟环境（`.venv\Scripts\activate`），否则会报 `No module named 'uvicorn'`。也可以直接用 `.venv\Scripts\python.exe main.py` 跳过激活步骤。
+
+### 6. 无需 LLM API Key
+
+本系统已优化：创建视频时如果用户未填写自定义脚本，后端会自动根据主题生成默认脚本并提取素材关键词，**完全跳过 MPT 的 LLM 调用**，因此不需要配置 moonshot/openai 等 LLM API Key。只需：
+- Edge TTS（免费，自动使用）
+- Pexels API Key（免费，需手动申请配置）
+
+### 7. 验证连接
+
+启动后访问 http://127.0.0.1:8081/ping ，返回 `"pong"` 即正常。后台短视频营销页面会显示「MPT 服务已连接」。
 
 ## 常用命令
 
@@ -193,6 +331,7 @@ node dev.js
 | `npm run build:client` | 仅构建前端 |
 | `npm run start` | 启动生产构建 |
 | `npm run type:check` | 前后端类型检查 |
+| `npx playwright install chromium` | 安装 Playwright 浏览器 |
 
 ## API 概览
 
@@ -213,6 +352,7 @@ Authorization: Bearer <token>
 - `DELETE /api/products/:id` — 删除产品（需登录）
 - `POST /api/products/:id/featured` — 切换推荐（需登录）
 - `DELETE /api/products/batch` — 批量删除（需登录）
+- `POST /api/products/import` — 批量Excel导入（需登录）
 
 ### 分类
 - `GET /api/categories` — 分类列表
@@ -245,6 +385,32 @@ Authorization: Bearer <token>
 - `DELETE /api/customers/followups/:id` — 删除跟进记录（需登录）
 - `PUT /api/customers/followups/:id/toggle-replied` — 切换已回复（需登录）
 
+### 单证工具
+- `GET /api/documents` — 单证列表
+- `GET /api/documents/:id` — 单证详情
+- `POST /api/documents` — 新创单证（需登录）
+- `PUT /api/documents/:id` — 更新单证（需登录）
+- `DELETE /api/documents/:id` — 删除单证（需登录）
+
+### 地图采集
+- `GET /api/maps-scraper/tasks` — 采集任务列表
+- `GET /api/maps-scraper/tasks/:id` — 任务详情
+- `POST /api/maps-scraper/tasks` — 创建采集任务（需登录）
+- `POST /api/maps-scraper/tasks/:id/start` — 开始采集（需登录）
+- `POST /api/maps-scraper/tasks/:id/stop` — 停止采集（需登录）
+- `GET /api/maps-scraper/tasks/:id/results` — 采集结果
+- `POST /api/maps-scraper/results/:id/add-to-customer` — 转客户（需登录）
+- `GET /api/maps-scraper/presets` — 预设列表
+- `POST /api/maps-scraper/presets` — 保存预设（需登录）
+
+### 短视频营销
+- `GET /api/video-marketing/tasks` — 视频任务列表
+- `GET /api/video-marketing/tasks/:id` — 任务详情
+- `POST /api/video-marketing/tasks` — 创建视频任务（需登录）
+- `POST /api/video-marketing/tasks/:id/refresh` — 刷新状态/重试（需登录）
+- `DELETE /api/video-marketing/tasks/:id` — 删除任务（需登录）
+- `GET /api/video-marketing/service/status` — MPT 服务状态检测
+
 ### 数据导出
 - `POST /api/export/sync-to-frontend` — 同步数据到前台项目（需登录）
 
@@ -264,6 +430,16 @@ Authorization: Bearer <token>
 | `inquiry` | 询盘 |
 | `customer` | 客户（CRM） |
 | `customer_followup` | 客户跟进记录 |
+| `document` | 单证 |
+| `ai_lead` | AI获客线索 |
+| `ai_intelligence_report` | AI背调报告 |
+| `ai_outreach` | AI开发记录 |
+| `email_account` | 邮箱账号 |
+| `email_message` | 邮件消息 |
+| `maps_scraper_task` | 地图采集任务 |
+| `maps_scraper_result` | 地图采集结果 |
+| `maps_scraper_preset` | 地图采集预设 |
+| `video_task` | 短视频任务 |
 
 ### 数据库文件
 
@@ -354,6 +530,10 @@ server {
 
 格式：`C` + 4位年份 + 6位序号，例如 `C2026000001`。每年从 000001 重新计数，创建客户时自动生成。
 
+### 侧边栏菜单分组
+
+侧边栏菜单分为 7 组可折叠目录：工作台、产品中心、内容管理、业务管理、单证工具、AI获客、系统。在 `client/src/components/Layout.tsx` 的 `NAV_GROUPS` 中配置。
+
 ## 常见问题
 
 ### Q: npm install 报错 better-sqlite3 编译失败？
@@ -367,6 +547,27 @@ A: 删除 `./data/app.db` 后重启，会重新创建默认账号 admin/admin123
 
 ### Q: 前台看不到后台更新的产品？
 A: 检查 `.env` 中 `FRONTEND_DATA_DIR` 路径是否正确，然后在「系统设置」页面点击同步。
+
+### Q: 地图采集报错 "Executable doesn't exist"？
+A: Playwright 浏览器未安装，运行 `npx playwright install chromium`。
+
+### Q: 短视频营销提示 MPT 服务未连接？
+A: 需要单独启动 MoneyPrinterTurbo 服务，参考上方「MoneyPrinterTurbo 安装」章节。确保 `.env` 中 `MPT_API_URL=http://127.0.0.1:8081`。
+
+### Q: 视频生成失败，提示 `moonshot: api_key is not set`？
+A: 已修复。后端会自动生成默认脚本跳过 LLM 调用。请重启后台（`npm run dev`），删除失败任务后重新创建。
+
+### Q: 视频生成失败，提示 `pexels_api_keys is not set`？
+A: 需要在 MPT 的 `config.toml` 中配置 Pexels API Key。免费申请：https://www.pexels.com/api/ ，配置后重启 MPT。
+
+### Q: MPT 启动报错 `assert scope["type"] == "http"`？
+A: MPT 原版 asgi.py 根路径 StaticFiles 挂载导致 WebSocket 断言错误。参考「MoneyPrinterTurbo 安装」第4步，注释掉根路径挂载。
+
+### Q: MPT 启动报错 `No module named 'uvicorn'`？
+A: 没有激活虚拟环境。先运行 `.venv\Scripts\activate`，再运行 `python main.py`；或直接用 `.venv\Scripts\python.exe main.py`。
+
+### Q: 地图采集结果中邮箱显示 jpg 等无效内容？
+A: 已在后端自动过滤图片/文档扩展名，升级到最新版本即可。
 
 ## License
 

@@ -20,6 +20,7 @@ import AiIntelligencePage from './pages/AiIntelligence/AiIntelligencePage';
 import AiOutreachPage from './pages/AiOutreach/AiOutreachPage';
 import EmailCenterPage from './pages/EmailCenter/EmailCenterPage';
 import MapsScraperPage from './pages/MapsScraper/MapsScraperPage';
+import VideoMarketingPage from './pages/VideoMarketing/VideoMarketingPage';
 
 const RoutesComponent = () => {
   return (
@@ -44,6 +45,7 @@ const RoutesComponent = () => {
         <Route path="ai-outreach" element={<AiOutreachPage />} />
         <Route path="email-center" element={<EmailCenterPage />} />
         <Route path="maps-scraper" element={<MapsScraperPage />} />
+        <Route path="video-marketing" element={<VideoMarketingPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFound />} />

@@ -21,6 +21,7 @@ import {
   Briefcase,
   Sparkles,
   BarChart3,
+  Film,
 } from "lucide-react";
 
 import {
@@ -111,6 +112,7 @@ const NAV_GROUPS: NavGroup[] = [
       { path: "/ai-outreach", label: "AI开发", icon: Send },
       { path: "/email-center", label: "邮箱中心", icon: Mail },
       { path: "/maps-scraper", label: "地图采集", icon: MapPin },
+      { path: "/video-marketing", label: "短视频营销", icon: Film },
     ],
   },
   {
