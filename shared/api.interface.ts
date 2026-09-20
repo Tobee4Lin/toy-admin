@@ -70,6 +70,7 @@ export interface Inquiry {
   message: string;
   customizationRequirement: string;
   selectedProducts: SelectedProduct[];
+  attachments: Array<{ name: string; url: string }>;
   productInterest: string;
   sourcePage: string;
   source: string;
@@ -111,6 +112,7 @@ export interface PublicInquirySubmitRequest {
   customizationRequirement?: string;
   source?: string;
   selectedProducts?: SelectedProduct[];
+  attachments?: Array<{ name: string; url: string }>;
 }
 
 export interface PublicLeadSubmitRequest {

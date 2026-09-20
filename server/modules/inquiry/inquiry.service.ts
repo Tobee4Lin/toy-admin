@@ -154,6 +154,7 @@ export class InquiryService {
         message: dto.message ?? null,
         customizationRequirement: dto.customizationRequirement ?? null,
         selectedProducts: dto.selectedProducts ?? [],
+        attachments: dto.attachments ?? [],
         source: dto.source ?? 'rfq',
         status: 'new',
       })
@@ -211,6 +212,7 @@ export class InquiryService {
       message: row.message ?? '',
       customizationRequirement: row.customizationRequirement ?? '',
       selectedProducts: (row.selectedProducts as import('@shared/api.interface').SelectedProduct[]) ?? [],
+      attachments: (row.attachments as Array<{ name: string; url: string }>) ?? [],
       productInterest: row.productInterest ?? '',
       sourcePage: row.sourcePage ?? '',
       source: row.source ?? 'rfq',

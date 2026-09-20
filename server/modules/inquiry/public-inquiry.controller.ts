@@ -21,6 +21,7 @@ const inquirySchema = z.object({
   pageUrl: z.string().optional(),
   customizationRequirement: z.string().optional(),
   source: z.string().optional(),
+  attachments: z.array(z.object({ name: z.string(), url: z.string() })).optional(),
   selectedProducts: z
     .array(
       z.object({

@@ -52,7 +52,22 @@ export class UploadController {
       res.status(404).json({ message: 'File not found' });
       return;
     }
-    res.setHeader('Content-Type', 'application/octet-stream');
+    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    const mimeMap: Record<string, string> = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      svg: 'image/svg+xml',
+      pdf: 'application/pdf',
+      txt: 'text/plain',
+    };
+    const contentType = mimeMap[ext] || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    if (mimeMap[ext]) {
+      res.setHeader('Content-Disposition', 'inline');
+    }
     const stream = createReadStream(filePath);
     stream.pipe(res);
   }

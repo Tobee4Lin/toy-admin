@@ -21,7 +21,8 @@ import {
   Briefcase,
   Sparkles,
   BarChart3,
-  Film,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 import {
@@ -112,7 +113,6 @@ const NAV_GROUPS: NavGroup[] = [
       { path: "/ai-outreach", label: "AI开发", icon: Send },
       { path: "/email-center", label: "邮箱中心", icon: Mail },
       { path: "/maps-scraper", label: "地图采集", icon: MapPin },
-      { path: "/video-marketing", label: "短视频营销", icon: Film },
     ],
   },
   {
@@ -224,6 +224,12 @@ const NavGroupComponent = ({ group, pathname }: { group: NavGroup; pathname: str
 };
 
 const LayoutContent = () => {
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
   const { pathname } = useLocation();
   const activeTitle = getTitleByPath(pathname);
 
@@ -288,6 +294,9 @@ const LayoutContent = () => {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <button onClick={() => setDark(!dark)} className="ml-auto rounded-md p-2 hover:bg-accent transition-colors" title="切换主题">
+            {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
+          </button>
         </header>
         <div className="flex-1 overflow-auto">
           <Outlet />

@@ -17,6 +17,8 @@ import {
   Link as LinkIcon,
   Tag,
   UserPlus,
+  Paperclip,
+  FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -47,6 +49,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@client/src/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@client/src/components/ui/dialog';
+import FilePreview from '@client/src/components/FilePreview';
 import {
   Table,
   TableBody,
@@ -121,6 +129,7 @@ const InquiriesPage = () => {
 
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detail, setDetail] = useState<Inquiry | null>(null);
+  const [previewAtt, setPreviewAtt] = useState<{ name: string; url: string } | null>(null);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -233,7 +242,7 @@ const InquiriesPage = () => {
   const totalPages = data ? Math.ceil(data.total / pageSize) : 0;
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto">
+    <div className="p-6 w-full">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground mb-1">询盘管理</h1>
         <p className="text-muted-foreground text-sm">查看和管理来自全球客户的产品询盘</p>
@@ -575,6 +584,39 @@ const InquiriesPage = () => {
                    </section>
                  )}
 
+                 {detail.attachments && detail.attachments.length > 0 && (
+                   <section>
+                     <div className="flex items-center gap-2 mb-3">
+                       <Paperclip className="size-4 text-primary" />
+                       <h3 className="text-sm font-semibold text-foreground">附件（{detail.attachments.length}）</h3>
+                     </div>
+                     <div className="rounded-md border border-border bg-muted/30 p-2">
+                       {detail.attachments.map((att, idx) => {
+                         const ext = att.name.split('.').pop()?.toUpperCase() || 'FILE';
+                         const isImg = ['JPG', 'PNG', 'GIF', 'WEBP', 'SVG'].includes(ext);
+                         const fullUrl = att.url.startsWith('http') ? att.url : `http://localhost:3000${att.url}`;
+                         return (
+                           <button
+                             key={idx}
+                             type="button"
+                             onClick={() => setPreviewAtt(att)}
+                             className="flex w-full items-center gap-3 rounded px-2 py-2 text-left hover:bg-background transition-colors"
+                           >
+                             {isImg ? (
+                               <img src={fullUrl} alt={att.name} className="size-10 shrink-0 rounded object-cover border border-border" />
+                             ) : (
+                               <span className="flex size-10 shrink-0 items-center justify-center rounded bg-primary/10 text-primary text-[9px] font-bold uppercase">
+                                 {ext.slice(0, 4)}
+                               </span>
+                             )}
+                             <span className="flex-1 truncate text-sm">{att.name}</span>
+                           </button>
+                         );
+                       })}
+                     </div>
+                   </section>
+                 )}
+
                  {detail.selectedProducts && detail.selectedProducts.length > 0 && (
                    <section>
                      <div className="flex items-center gap-2 mb-3">
@@ -647,6 +689,37 @@ const InquiriesPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Attachment Preview Modal */}
+      <Dialog open={!!previewAtt} onOpenChange={(open) => !open && setPreviewAtt(null)}>
+        <DialogContent className="max-w-4xl w-[90vw] h-[80vh] p-0 overflow-hidden flex flex-col">
+          <DialogTitle className="sr-only">Preview</DialogTitle>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <span className="text-sm font-medium truncate">{previewAtt?.name}</span>
+            <div className="flex items-center gap-2">
+              {previewAtt && (
+                <a
+                  href={previewAtt.url.startsWith("http") ? previewAtt.url : `http://localhost:3000${previewAtt.url}`}
+                  download={previewAtt.name}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Download
+                </a>
+              )}
+              <button onClick={() => setPreviewAtt(null)} className="text-muted-foreground hover:text-foreground">
+                <X className="size-4" />
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 bg-muted/30 overflow-auto">
+            {previewAtt && (
+              <FilePreview
+                url={previewAtt.url.startsWith("http") ? previewAtt.url : `http://localhost:3000${previewAtt.url}`}
+                filename={previewAtt.name}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

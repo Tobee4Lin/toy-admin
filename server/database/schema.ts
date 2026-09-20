@@ -137,6 +137,7 @@ export const inquiry = pgTable("inquiry", {
    * @type {"itemNumber":string,"name":string,"quantity":number}
    */
   selectedProducts: jsonb("selected_products").notNull().default('[]'),
+  attachments: jsonb("attachments").notNull().default('[]'),
   productInterest: varchar("product_interest", { length: 255 }),
   sourcePage: varchar("source_page", { length: 255 }),
   // System field: Creation time (auto-filled, do not modify)

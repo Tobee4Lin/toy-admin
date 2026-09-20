@@ -75,6 +75,7 @@ export class DashboardService {
       source: '',
       customizationRequirement: '',
       selectedProducts: [],
+      attachments: [],
       productInterest: '',
       sourcePage: '',
       status: (row.status as Inquiry['status']) ?? 'new',

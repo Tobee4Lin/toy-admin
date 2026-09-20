@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Users,
   UserPlus,
@@ -782,6 +782,7 @@ export default function CustomersPage() {
             <TableRow>
               <TableHead className="w-28">客户编号</TableHead>
               <TableHead>公司名称</TableHead>
+              <TableHead>联系人</TableHead>
               <TableHead>国家/地区</TableHead>
               <TableHead className="w-32">联系方式</TableHead>
               <TableHead className="w-24">优先级</TableHead>
@@ -792,14 +793,15 @@ export default function CustomersPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={8} className="py-12 text-center text-muted-foreground">加载中...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="py-12 text-center text-muted-foreground">加载中...</TableCell></TableRow>
             ) : customers.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="py-12 text-center text-muted-foreground">暂无客户数据</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="py-12 text-center text-muted-foreground">暂无客户数据</TableCell></TableRow>
             ) : (
               customers.map((c) => (
                 <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleEdit(c)}>
                   <TableCell className="font-mono text-xs">{c.customerNo}</TableCell>
                   <TableCell className="font-medium">{c.company}</TableCell>
+                  <TableCell>{c.contactPerson || '-'}</TableCell>
                   <TableCell>{c.country || '-'}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">

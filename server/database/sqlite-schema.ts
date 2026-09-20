@@ -114,6 +114,9 @@ export const inquiry = sqliteTable('inquiry', {
   selectedProducts: text('selected_products', { mode: 'json' })
     .notNull()
     .default(`[]`),
+  attachments: text('attachments', { mode: 'json' })
+    .notNull()
+    .default(`[]`),
   productInterest: text('product_interest'),
   sourcePage: text('source_page'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })

@@ -3,6 +3,8 @@
 @import "./tailwind-theme.css";
 @import "./typography.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   * {
     border-color: var(--border);
