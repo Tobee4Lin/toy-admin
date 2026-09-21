@@ -115,7 +115,7 @@ export class GoogleMapsScraper {
         links.map(l => (l as HTMLAnchorElement).href).filter(Boolean)
       );
 
-      const uniqueLinks = [...new Set(resultLinks)].slice(0, perArea);
+      const uniqueLinks: string[] = [...new Set(resultLinks as string[])].slice(0, perArea);
       onLog?.(`🔍 找到 ${uniqueLinks.length} 个结果，开始提取详情...`);
 
       for (let i = 0; i < uniqueLinks.length; i++) {

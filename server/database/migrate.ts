@@ -631,6 +631,17 @@ export async function migrateAndSeed(): Promise<void> {
     /* table might not exist yet, ignore */
   }
 
+  // Add attachments column to inquiries table
+  try {
+    const inquiryCols = db.all('PRAGMA table_info(inquiries)') as { name: string }[];
+    if (!inquiryCols.find((c) => c.name === 'attachments')) {
+      db.run('ALTER TABLE inquiries ADD COLUMN attachments TEXT');
+      logger.log('Added attachments column to inquiries table');
+    }
+  } catch {
+    /* ignore */
+  }
+
   // Video Marketing tables
   db.run(`
     CREATE TABLE IF NOT EXISTS video_task (
