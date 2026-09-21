@@ -70,7 +70,7 @@ export function BatchImportDialog({
   onOpenChange,
   onSuccess,
 }: BatchImportDialogProps) {
-  const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [excelFile, setExcelFile] = useState<{ name: string; size: number; buffer: ArrayBuffer } | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<ImportStatus>('idle');
   const [uploadProgress, setUploadProgress] = useState('');

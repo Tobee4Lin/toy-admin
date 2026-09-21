@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   Inject,
@@ -255,6 +255,7 @@ export class ProductService {
       '适用年龄',
       '价格区间',
       '是否精选(是/否)',
+      '规格参数',
     ];
 
     const sampleData = [
@@ -273,6 +274,7 @@ export class ProductService {
         '3+',
         '$1.20-$1.80',
         '否',
+        'Material:PP Plastic;Package Size:28x20x25cm;Weight:250g',
       ],
       [
         'Automatic Bubble Gun',
@@ -289,6 +291,7 @@ export class ProductService {
         '3+',
         '$2.50-$3.50',
         '是',
+        'Material:ABS Plastic;Package Size:20x15x10cm;Weight:150g',
       ],
     ];
 
@@ -299,7 +302,7 @@ export class ProductService {
     ws['!cols'] = [
       { wch: 30 }, { wch: 15 }, { wch: 35 }, { wch: 40 }, { wch: 30 },
       { wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 40 }, { wch: 20 },
-      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 12 },
+      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 50 },
     ];
 
     const wb = XLSX.utils.book_new();
@@ -379,6 +382,18 @@ export class ProductService {
         const priceRange = String(row['价格区间'] || '').trim();
         const featuredStr = String(row['是否精选(是/否)'] || row['是否精选'] || '否').trim();
         const isFeatured = featuredStr === '是' || featuredStr === 'true' || featuredStr === 'yes';
+        const specStr = String(row['规格参数'] || row['规格参数'] || '').trim();
+        const specifications: Record<string, string> = {};
+        if (specStr) {
+          specStr.split(/[;；]/).forEach((pair: string) => {
+            const idx = pair.indexOf(':');
+            if (idx > 0) {
+              const k = pair.substring(0, idx).trim();
+              const v = pair.substring(idx + 1).trim();
+              if (k && v) specifications[k] = v;
+            }
+          });
+        }
 
         this.db
           .insert(schema.product)
@@ -389,7 +404,7 @@ export class ProductService {
             category,
             description,
             features,
-            specifications: {},
+            specifications,
             moq,
             customizationAvailable,
             imageUrl,
