@@ -1,4 +1,4 @@
-import { getDatabase, schema } from './db';
+﻿import { getDatabase, schema } from './db';
 import { hashSync } from 'bcryptjs';
 import { Logger } from '@nestjs/common';
 
@@ -97,6 +97,7 @@ export async function migrateAndSeed(): Promise<void> {
       selected_products TEXT NOT NULL DEFAULT '[]',
       product_interest TEXT,
       source_page TEXT,
+      attachments TEXT,
       created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
       updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )

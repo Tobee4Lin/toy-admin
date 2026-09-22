@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+﻿import React, { useState, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -186,6 +186,7 @@ const InquiriesPage = () => {
     setDetail(null);
     try {
       const inquiry = await getInquiry(id);
+      if (typeof inquiry.attachments === 'string') { try { inquiry.attachments = JSON.parse(inquiry.attachments); } catch { inquiry.attachments = []; } }
       setDetail(inquiry);
       // Auto mark as read if status is new
       if (inquiry.status === 'new') {
