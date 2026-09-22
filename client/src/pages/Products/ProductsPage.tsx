@@ -7,6 +7,7 @@ import {
   Pencil,
   Package,
   Upload,
+  ImagePlus,
 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
@@ -53,6 +54,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Image } from '@/components/ui/image';
 import { BatchImportDialog } from '@/components/products/BatchImportDialog';
+import { BatchImageDialog } from '@/components/products/BatchImageDialog';
 
 import {
   listProducts,
@@ -76,6 +78,7 @@ const ProductsPage = () => {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
   const [batchImportOpen, setBatchImportOpen] = useState(false);
+  const [batchImageOpen, setBatchImageOpen] = useState(false);
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async () => {
@@ -259,6 +262,14 @@ const ProductsPage = () => {
               >
                 <Upload className="mr-1.5 size-4" />
                 批量导入
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBatchImageOpen(true)}
+              >
+                <ImagePlus className="mr-1.5 size-4" />
+                批量传图
               </Button>
               <Button size="sm" onClick={() => navigate('/products/new')}>
                 <Plus className="mr-1.5 size-4" />
@@ -492,6 +503,15 @@ const ProductsPage = () => {
         onOpenChange={setBatchImportOpen}
         onSuccess={() => {
           setPage(1);
+          fetchProducts();
+        }}
+      />
+
+      {/* Batch image upload dialog */}
+      <BatchImageDialog
+        open={batchImageOpen}
+        onOpenChange={setBatchImageOpen}
+        onSuccess={() => {
           fetchProducts();
         }}
       />

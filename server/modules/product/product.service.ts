@@ -57,7 +57,7 @@ export class ProductService {
     pageSize?: number;
   }): Promise<PaginatedResponse<Product>> {
     const page = Math.max(1, params.page ?? 1);
-    const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 10));
+    const pageSize = Math.min(500, Math.max(1, params.pageSize ?? 10));
     const offset = (page - 1) * pageSize;
 
     const conditions = [];
@@ -382,7 +382,8 @@ export class ProductService {
         const priceRange = String(row['价格区间'] || '').trim();
         const featuredStr = String(row['是否精选(是/否)'] || row['是否精选'] || '否').trim();
         const isFeatured = featuredStr === '是' || featuredStr === 'true' || featuredStr === 'yes';
-        const specStr = String(row['规格参数'] || row['规格参数'] || '').trim();
+        const specKey = Object.keys(row).find((k) => k.trim().startsWith('规格参数'));
+        const specStr = String(specKey ? row[specKey] : '').trim();
         const specifications: Record<string, string> = {};
         if (specStr) {
           specStr.split(/[;；]/).forEach((pair: string) => {
@@ -426,5 +427,97 @@ export class ProductService {
     }
 
     return results;
+  }
+
+  // 单独批量给已存在的产品分配图片（产品信息已通过 Excel 导入，图片后续分批上传）
+  async batchAssignImages(params: {
+    mode?: 'replace' | 'append';
+    assignments: Array<{
+      id: number;
+      mainImage?: string | null;
+      gallery?: string[];
+    }>;
+  }): Promise<{
+    updated: number;
+    products: Array<{
+      id: number;
+      name: string;
+      itemNumber: string;
+      imageUrl: string;
+      galleryCount: number;
+    }>;
+    missing: number[];
+  }> {
+    const mode = params.mode === 'append' ? 'append' : 'replace';
+    const updated: Array<{
+      id: number;
+      name: string;
+      itemNumber: string;
+      imageUrl: string;
+      galleryCount: number;
+    }> = [];
+    const missing: number[] = [];
+
+    for (const assignment of params.assignments ?? []) {
+      const product = this.db
+        .select()
+        .from(schema.product)
+        .where(eq(schema.product.id, assignment.id))
+        .get();
+
+      if (!product) {
+        missing.push(assignment.id);
+        continue;
+      }
+
+      const incomingGallery = Array.isArray(assignment.gallery)
+        ? assignment.gallery.filter((u): u is string => typeof u === 'string' && !!u)
+        : [];
+      const incomingMain =
+        typeof assignment.mainImage === 'string' && assignment.mainImage
+          ? assignment.mainImage
+          : null;
+
+      let nextGallery: string[];
+      if (mode === 'replace') {
+        nextGallery = [...incomingGallery];
+      } else {
+        nextGallery = [...(((product.gallery as string[]) ?? []) as string[])];
+        for (const url of incomingGallery) {
+          if (!nextGallery.includes(url)) nextGallery.push(url);
+        }
+      }
+
+      // 主图：显式指定则更新；若仍无主图，用画廊第一张补齐
+      let nextImageUrl = product.imageUrl ?? '';
+      if (incomingMain) {
+        nextImageUrl = incomingMain;
+      } else if (!nextImageUrl && nextGallery.length > 0) {
+        nextImageUrl = nextGallery[0];
+      }
+
+      // 主图不重复放进画廊
+      nextGallery = nextGallery.filter((u) => u !== nextImageUrl);
+
+      this.db
+        .update(schema.product)
+        .set({
+          imageUrl: nextImageUrl,
+          gallery: nextGallery,
+          updatedAt: new Date(),
+        } as Partial<typeof schema.product.$inferInsert>)
+        .where(eq(schema.product.id, assignment.id))
+        .run();
+
+      updated.push({
+        id: assignment.id,
+        name: product.name,
+        itemNumber: product.itemNumber ?? '',
+        imageUrl: nextImageUrl,
+        galleryCount: nextGallery.length,
+      });
+    }
+
+    return { updated: updated.length, products: updated, missing };
   }
 }

@@ -13,9 +13,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     abortOnError: process.env.NODE_ENV !== 'development',
     logger: ['error', 'warn', 'log'],
+    bodyParser: false,
   });
 
   app.useGlobalPipes(new ValidationPipe({ transform: true, forbidUnknownValues: false }));
+
+  // 放大请求体限制，避免批量导入（174 条产品等）触发 PayloadTooLargeError
+  app.useBodyParser('json', { limit: '50mb' });
+  app.useBodyParser('urlencoded', { limit: '50mb', extended: true });
 
   const host = process.env.SERVER_HOST || '0.0.0.0';
   const port = Number(process.env.SERVER_PORT || '3000');

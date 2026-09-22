@@ -1,6 +1,8 @@
 import { http } from '@client/src/utils/http';
 import type { PaginatedResponse, Product } from '@shared/api.interface';
 
+export type { Product };
+
 export const listProducts = async (params: {
   search?: string;
   category?: string;
@@ -85,5 +87,29 @@ export const batchImportProductsJson = async (
   errors: Array<{ row: number; message: string }>;
 }> => {
   const res = await http.post('/api/products/batch-import-json', { products });
+  return res.data;
+};
+
+export interface BatchImageAssignment {
+  id: number;
+  mainImage?: string | null;
+  gallery?: string[];
+}
+
+export const batchAssignImages = async (payload: {
+  mode?: 'replace' | 'append';
+  assignments: BatchImageAssignment[];
+}): Promise<{
+  updated: number;
+  products: Array<{
+    id: number;
+    name: string;
+    itemNumber: string;
+    imageUrl: string;
+    galleryCount: number;
+  }>;
+  missing: number[];
+}> => {
+  const res = await http.post('/api/products/batch-images', payload);
   return res.data;
 };

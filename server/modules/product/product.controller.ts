@@ -80,6 +80,26 @@ export class ProductController {
     return this.productService.batchRemove(body.ids);
   }
 
+  // 单独批量给已存在的产品分配图片（图片分批上传，按产品ID匹配）
+  @Post('batch-images')
+  @UseGuards(AuthGuard('jwt'))
+  async batchAssignImages(
+    @Body()
+    body: {
+      mode?: 'replace' | 'append';
+      assignments: Array<{
+        id: number;
+        mainImage?: string | null;
+        gallery?: string[];
+      }>;
+    },
+  ) {
+    if (!body.assignments || !Array.isArray(body.assignments)) {
+      return { updated: 0, products: [], missing: [] };
+    }
+    return this.productService.batchAssignImages(body);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Product> {
     return this.productService.findOne(Number(id));
