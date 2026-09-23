@@ -75,6 +75,7 @@ export interface DocumentData {
   totalAmount?: string;
   currency?: string;
   status?: 'draft' | 'sent' | 'confirmed';
+  sourceInquiryId?: number;
 }
 
 @Injectable()
@@ -129,6 +130,7 @@ export class DocumentService {
         totalAmount: data.totalAmount,
         currency: data.currency || 'USD',
         status: data.status || 'draft',
+        sourceInquiryId: data.sourceInquiryId ?? null,
       })
       .returning()
       .get();
@@ -171,6 +173,9 @@ export class DocumentService {
         ...(data.totalAmount !== undefined && { totalAmount: data.totalAmount }),
         ...(data.currency !== undefined && { currency: data.currency }),
         ...(data.status !== undefined && { status: data.status }),
+        ...(data.sourceInquiryId !== undefined && {
+          sourceInquiryId: data.sourceInquiryId ?? null,
+        }),
         updatedAt: new Date(),
       })
       .where(eq(schema.document.id, id))
@@ -223,6 +228,7 @@ export class DocumentService {
       totalAmount: row.totalAmount || '0',
       currency: row.currency || 'USD',
       status: row.status as DocumentData['status'],
+      sourceInquiryId: row.sourceInquiryId ?? undefined,
     };
   }
 }

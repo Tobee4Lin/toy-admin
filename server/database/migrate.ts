@@ -163,6 +163,7 @@ export async function migrateAndSeed(): Promise<void> {
       total_amount TEXT,
       currency TEXT DEFAULT 'USD',
       status TEXT DEFAULT 'draft',
+      source_inquiry_id INTEGER,
       created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
       updated_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
     )
@@ -178,6 +179,10 @@ export async function migrateAndSeed(): Promise<void> {
     if (!cols.find((c) => c.name === 'shipping_mark')) {
       db.run('ALTER TABLE document ADD COLUMN shipping_mark TEXT');
       logger.log('Added shipping_mark column to document table');
+    }
+    if (!cols.find((c) => c.name === 'source_inquiry_id')) {
+      db.run('ALTER TABLE document ADD COLUMN source_inquiry_id INTEGER');
+      logger.log('Added source_inquiry_id column to document table');
     }
   } catch {
     /* table might not exist yet, ignore */

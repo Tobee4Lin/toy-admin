@@ -197,6 +197,7 @@ export const document = sqliteTable('document', {
   totalAmount: text('total_amount'),
   currency: text('currency').default('USD'),
   status: text('status', { enum: ['draft', 'sent', 'confirmed'] }).default('draft'),
+  sourceInquiryId: integer('source_inquiry_id'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),

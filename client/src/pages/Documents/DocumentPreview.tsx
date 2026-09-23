@@ -183,7 +183,7 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                     </td>
                     <td className="border border-gray-400 px-2 py-1">{item.description}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.specs || '-'}</td>
-                    <td className="border border-gray-400 px-2 py-1 text-center">{item.quantity}</td>
+                    <td className="border border-gray-400 px-2 py-1 text-center">{item.quantity || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.cbmPerUnit || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.totalCbm || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center" style={{ whiteSpace: 'nowrap' }}>${item.unitPrice?.toFixed(2)}</td>

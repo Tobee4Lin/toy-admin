@@ -70,7 +70,9 @@ import {
   deleteInquiry,
 } from '@client/src/api/inquiries';
 import { createCustomerFromInquiry } from '@client/src/api/customers';
-import type { Inquiry, InquiryListResponse } from '@shared/api.interface';
+import { documentsApi, type DocumentData, type DocumentItem, type SellerInfo } from '@client/src/api/documents';
+import { listProducts } from '@client/src/api/products';
+import type { Inquiry, InquiryListResponse, Product } from '@shared/api.interface';
 
 const STATUS_TABS: { key: string; label: string }[] = [
   { key: 'all', label: '全部' },
@@ -136,6 +138,7 @@ const InquiriesPage = () => {
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
   const [statusUpdating, setStatusUpdating] = useState<boolean>(false);
+  const [creatingQuotation, setCreatingQuotation] = useState<boolean>(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -237,6 +240,108 @@ const InquiriesPage = () => {
       toast.error('删除失败');
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  // Generate a quotation draft from an inquiry with selected products.
+  const generateQuotation = async () => {
+    if (!detail || !detail.selectedProducts || detail.selectedProducts.length === 0) return;
+    setCreatingQuotation(true);
+    try {
+      // Prevent duplicate quotations for the same inquiry.
+      const existing = await documentsApi.getAll('quotation');
+      const found = existing.find((d) => d.sourceInquiryId === Number(detail.id));
+      if (found) {
+        toast.info('该询盘已生成报价单，正在打开...');
+        navigate(`/documents/${found.id}`);
+        return;
+      }
+      // Load products to enrich line items (image, specs, MOQ).
+      const res = await listProducts({ pageSize: 500 });
+      const byItem = new Map<string, Product>();
+      (res.items || []).forEach((pr) => {
+        if (pr.itemNumber) byItem.set(pr.itemNumber, pr);
+      });
+
+      const items: DocumentItem[] = detail.selectedProducts.map((sp, i) => {
+        const prod = sp.itemNumber ? byItem.get(sp.itemNumber) : undefined;
+        // Specs (per CTN) and Qty (CTN) are left blank for manual entry.
+        return {
+          id: `item-${i + 1}`,
+          image: prod && prod.imageUrl ? prod.imageUrl : undefined,
+          description: sp.name,
+          specs: '',
+          moq: prod ? prod.moq : undefined,
+          quantity: 0,
+          unitPrice: 0,
+          amount: 0,
+        };
+      });
+
+      // Seller info / terms from the local document draft (doc_cache).
+      let cachedSeller: SellerInfo | undefined;
+      let cachedTerms: DocumentData['terms'];
+      let cachedValidity: string | undefined;
+      let cachedCurrency = 'USD';
+      try {
+        const raw = localStorage.getItem('doc_cache');
+        if (raw) {
+          const c = JSON.parse(raw);
+          cachedSeller = c.sellerInfo;
+          cachedTerms = c.terms;
+          cachedValidity = c.validity;
+          cachedCurrency = c.currency || 'USD';
+        }
+      } catch { /* ignore */ }
+
+      // Document number: LVC + YYYYMMDD + 3 random digits + 2-letter customer initials.
+      const buildInitials = (): string => {
+        const src = (detail.company && detail.company.trim()) || detail.name || '';
+        const words = src.split(/[\s.,&/\-]+/).filter(Boolean);
+        let ini = '';
+        if (words.length >= 2) ini = words[0][0] + words[1][0];
+        else if (words.length === 1) ini = words[0].slice(0, 2);
+        ini = ini.replace(/[^A-Za-z]/g, '').toUpperCase();
+        if (ini.length === 0) ini = 'XX';
+        if (ini.length === 1) ini += 'X';
+        return ini.slice(0, 2);
+      };
+      const nowD = new Date();
+      const ymd =
+        nowD.getFullYear() +
+        String(nowD.getMonth() + 1).padStart(2, '0') +
+        String(nowD.getDate()).padStart(2, '0');
+      const rand3 = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+      const newDocNo = `LVC${ymd}${rand3}${buildInitials()}`;
+
+      const doc: DocumentData = {
+        type: 'quotation',
+        documentNo: newDocNo,
+        date: new Date().toISOString().slice(0, 10),
+        validity: cachedValidity,
+        sellerInfo: cachedSeller,
+        buyerInfo: {
+          companyName: detail.company || '',
+          attn: detail.name,
+          address: detail.country || '',
+          tel: detail.whatsapp,
+          email: detail.email,
+        },
+        items,
+        terms: cachedTerms,
+        currency: cachedCurrency,
+        status: 'draft',
+        sourceInquiryId: Number(detail.id),
+      };
+
+      const created = await documentsApi.create(doc);
+      toast.success('报价单已生成，请补充单价');
+      navigate(`/documents/${created.id}`);
+    } catch (err) {
+      console.error('generate quotation failed', String(err));
+      toast.error('生成报价单失败');
+    } finally {
+      setCreatingQuotation(false);
     }
   };
 
@@ -620,11 +725,28 @@ const InquiriesPage = () => {
 
                  {detail.selectedProducts && detail.selectedProducts.length > 0 && (
                    <section>
-                     <div className="flex items-center gap-2 mb-3">
-                       <Package className="size-4 text-primary" />
-                       <h3 className="text-sm font-semibold text-foreground">
-                         已选产品（{detail.selectedProducts.length}）
-                       </h3>
+                     <div className="flex items-center justify-between gap-2 mb-3">
+                       <div className="flex items-center gap-2">
+                         <Package className="size-4 text-primary" />
+                         <h3 className="text-sm font-semibold text-foreground">
+                           已选产品（{detail.selectedProducts.length}）
+                         </h3>
+                       </div>
+                       <Button
+                         type="button"
+                         size="sm"
+                         variant="outline"
+                         className="h-7 px-2 text-xs"
+                         disabled={creatingQuotation}
+                         onClick={generateQuotation}
+                       >
+                         {creatingQuotation ? (
+                           <span className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
+                         ) : (
+                           <FileText className="size-3.5" />
+                         )}
+                         生成报价单
+                       </Button>
                      </div>
                      <div className="space-y-2">
                        {detail.selectedProducts.map((p, idx) => (

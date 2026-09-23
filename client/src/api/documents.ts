@@ -72,6 +72,7 @@ export interface DocumentData {
   totalAmount?: string;
   currency?: string;
   status?: 'draft' | 'sent' | 'confirmed';
+  sourceInquiryId?: number;
   createdAt?: string;
   updatedAt?: string;
 }
