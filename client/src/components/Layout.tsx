@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import {
+  Activity, useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -67,6 +68,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: BarChart3,
     items: [
       { path: "/", label: "仪表盘", icon: LayoutDashboard },
+      { path: "/analytics", label: "访问统计", icon: Activity },
     ],
   },
   {

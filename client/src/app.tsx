@@ -10,6 +10,7 @@ import CategoriesPage from './pages/Categories/CategoriesPage';
 import BlogPage from './pages/Blog/BlogPage';
 import BlogFormPage from './pages/Blog/BlogFormPage';
 import InquiriesPage from './pages/Inquiries/InquiriesPage';
+import AnalyticsPage from './pages/Analytics/AnalyticsPage';
 import CustomersPage from './pages/Customers/CustomersPage';
 import DocumentsPage from './pages/Documents/DocumentsPage';
 import DocumentEditor from './pages/Documents/DocumentEditor';
@@ -27,6 +28,7 @@ const RoutesComponent = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<Layout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="products" element={<ProductsPage />} />
         <Route path="products/new" element={<ProductFormPage />} />
         <Route path="products/:id/edit" element={<ProductFormPage />} />

@@ -682,5 +682,23 @@ export async function migrateAndSeed(): Promise<void> {
   `);
   db.run('CREATE INDEX IF NOT EXISTS idx_video_task_status ON video_task(status)');
 
+  // Website visit analytics table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS site_visit (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      path TEXT NOT NULL,
+      referrer TEXT,
+      referrer_host TEXT,
+      visitor_id TEXT,
+      session_id TEXT,
+      country TEXT,
+      device_type TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
+    )
+  `);
+  db.run('CREATE INDEX IF NOT EXISTS idx_site_visit_created ON site_visit(created_at)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_site_visit_path ON site_visit(path)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_site_visit_visitor ON site_visit(visitor_id)');
+
   logger.log('Database migrations completed successfully.');
 }

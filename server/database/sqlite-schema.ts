@@ -493,3 +493,24 @@ export const videoTask = sqliteTable('video_task', {
 ]);
 
 export const videoTaskTable = videoTask;
+
+// Website visit analytics
+export const siteVisit = sqliteTable('site_visit', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  path: text('path').notNull(),
+  referrer: text('referrer'),
+  referrerHost: text('referrer_host'),
+  visitorId: text('visitor_id'),
+  sessionId: text('session_id'),
+  country: text('country'),
+  deviceType: text('device_type'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+}, (table) => [
+  index('idx_site_visit_created').on(table.createdAt),
+  index('idx_site_visit_path').on(table.path),
+  index('idx_site_visit_visitor').on(table.visitorId),
+]);
+
+export const siteVisitTable = siteVisit;
