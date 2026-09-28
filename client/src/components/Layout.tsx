@@ -1,5 +1,4 @@
-import {
-  Activity, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -18,12 +17,12 @@ import {
   Send,
   Mail,
   MapPin,
-  Layers,
   Briefcase,
   Sparkles,
   BarChart3,
   Sun,
   Moon,
+  Activity,
 } from "lucide-react";
 
 import {
@@ -32,7 +31,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -167,12 +165,13 @@ const NavGroupComponent = ({ group, pathname }: { group: NavGroup; pathname: str
     const isActive = item.path === "/" ? pathname === "/" : pathname.startsWith(item.path);
     return (
       <SidebarMenuItem key={group.id}>
-        <SidebarMenuButton asChild isActive={isActive} className="relative">
+        <SidebarMenuButton
+          asChild
+          isActive={isActive}
+          className="h-9 rounded-lg text-[13px] font-medium"
+        >
           <Link to={item.path}>
-            {isActive && (
-              <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-primary" />
-            )}
-            <item.icon className="size-4" />
+            <item.icon className="size-[18px]" />
             <span>{item.label}</span>
           </Link>
         </SidebarMenuButton>
@@ -180,25 +179,29 @@ const NavGroupComponent = ({ group, pathname }: { group: NavGroup; pathname: str
     );
   }
 
-  // Multi-item group: collapsible
+  // Multi-item group: collapsible accordion
   return (
     <SidebarMenuItem key={group.id}>
       <SidebarMenuButton
         onClick={() => setOpen(!open)}
-        isActive={hasActiveChild}
-        className="relative cursor-pointer"
+        className={`h-9 cursor-pointer rounded-lg text-[13px] hover:bg-sidebar-accent/70 ${
+          hasActiveChild
+            ? "font-semibold text-sidebar-foreground"
+            : "font-medium text-sidebar-foreground/75"
+        }`}
       >
-        {hasActiveChild && (
-          <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r bg-primary" />
-        )}
-        <group.icon className="size-4" />
+        <group.icon className={`size-[18px] ${hasActiveChild ? "text-primary" : ""}`} />
         <span className="flex-1 text-left">{group.label}</span>
         {!isCollapsed && (
-          <ChevronDown className={`size-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            className={`size-3.5 text-sidebar-foreground/50 transition-transform duration-200 ${
+              open ? "rotate-180" : ""
+            }`}
+          />
         )}
       </SidebarMenuButton>
       {open && !isCollapsed && (
-        <div className="ml-4 mt-1 space-y-0.5 border-l border-border pl-2">
+        <div className="relative mt-1 ml-[18px] space-y-0.5 border-l border-sidebar-border/70 pl-2.5 pb-1">
           {group.items.map((item) => {
             const isActive = item.path === "/" ? pathname === "/" : pathname.startsWith(item.path);
             return (
@@ -207,14 +210,15 @@ const NavGroupComponent = ({ group, pathname }: { group: NavGroup; pathname: str
                 asChild
                 isActive={isActive}
                 size="sm"
-                className="relative"
+                className={`h-8 rounded-lg text-[12.5px] ${
+                  isActive
+                    ? "bg-primary/10 font-medium text-primary hover:bg-primary/15 hover:text-primary"
+                    : "font-normal text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+                }`}
               >
                 <Link to={item.path}>
-                  {isActive && (
-                    <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r bg-primary" />
-                  )}
                   <item.icon className="size-3.5" />
-                  <span className="text-xs">{item.label}</span>
+                  <span>{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             );
@@ -243,12 +247,12 @@ const LayoutContent = () => {
             <SidebarMenuItem>
               <SidebarMenuButton asChild size="lg">
                 <Link to="/">
-                  <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">
+                  <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/75 text-base font-bold text-primary-foreground shadow-sm">
                     T
                   </div>
                   <div className="group-data-[collapsible=icon]:hidden">
-                    <div className="text-sm font-semibold">ToyAdmin</div>
-                    <div className="text-xs text-sidebar-foreground/60">
+                    <div className="text-sm font-semibold tracking-tight">ToyAdmin</div>
+                    <div className="text-xs text-sidebar-foreground/55">
                       管理后台
                     </div>
                   </div>
@@ -260,7 +264,7 @@ const LayoutContent = () => {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-0.5">
                 {NAV_GROUPS.map((group) => (
                   <NavGroupComponent key={group.id} group={group} pathname={pathname} />
                 ))}
@@ -269,15 +273,18 @@ const LayoutContent = () => {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <SidebarMenu>
+          <SidebarMenu className="space-y-0.5">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton
+                asChild
+                className="h-9 rounded-lg text-[13px] text-sidebar-foreground/75 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+              >
                 <button
                   onClick={() => {
                     logout();
                   }}
                 >
-                  <LogOut className="size-4" />
+                  <LogOut className="size-[18px]" />
                   <span>退出登录</span>
                 </button>
               </SidebarMenuButton>
