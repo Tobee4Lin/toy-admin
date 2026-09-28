@@ -11,10 +11,13 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { existsSync, createReadStream } from 'fs';
+import { existsSync, createReadStream, mkdirSync } from 'fs';
 import type { Response } from 'express';
 
 const UPLOAD_DIR = join(process.cwd(), 'server', 'public', 'uploads');
+
+// Ensure upload directory exists on every machine (new clones, fresh deployments)
+mkdirSync(UPLOAD_DIR, { recursive: true });
 
 @Controller('api/upload')
 export class UploadController {
