@@ -144,7 +144,7 @@ export class ExportService {
   }
 
   async syncToFrontend(): Promise<{ success: boolean; message: string; files: string[]; images: number }> {
-    const dataDir = process.env.FRONTEND_DATA_DIR || resolve(process.cwd(), '..', 'app_17cbtkkekfv', 'src', 'data');
+    const dataDir = process.env.FRONTEND_DATA_DIR || resolve(process.cwd(), '..', 'toy-website-next', 'src', 'data');
     
     if (!existsSync(dataDir)) {
       return {

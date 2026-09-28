@@ -31,6 +31,7 @@
 - 推荐产品切换
 - 批量删除
 - **批量Excel导入**（下载模板，填写后上传识别）
+- **单独上传图片**（产品信息已存在时，分批补充图片）
 
 ### 分类管理 Categories
 - 分类 CRUD
@@ -44,9 +45,10 @@
 
 ### 询盘管理 Inquiries
 - 询盘列表（状态筛选：新询盘/已读/已回复/已归档）
-- 询盘详情抽屉
+- 询盘详情抽屉，附件支持图片缩略图和内嵌预览（PDF/图片/Word/Excel）
 - 状态流转
 - **一键转为客户**（自动带入公司、国家、联系方式）
+- **一键生成报价单**（自动带入买方信息、产品明细，编号规则 LVC+日期+随机+客户缩写）
 
 ### 客户管理 CRM
 - 客户列表（搜索、联系状态筛选、优先级筛选、分页）
@@ -89,6 +91,11 @@
 - WhatsApp 与电话重复时自动隐藏
 - 邮箱自动过滤无效内容（图片扩展名等）
 
+### 访问统计 Analytics
+- PV / UV / 今日 / 昨日 统计卡片
+- 7/30/90 天访问趋势图
+- 热门页面、来源、设备分布
+- 服务端 UA 过滤 60+ 种爬虫，同会话同路径 30 分钟去重
 
 ### 数据导出 Export
 - 一键同步产品/分类/博客数据到前台项目 `src/data/` 目录
@@ -121,6 +128,7 @@
 │   │   │   ├── AiOutreach/   # AI开发
 │   │   │   ├── EmailCenter/  # 邮箱中心
 │   │   │   ├── MapsScraper/  # 地图采集
+│   │   │   ├── Analytics/    # 访问统计
 │   │   │   ├── Settings/
 │   │   │   └── Login/
 │   │   ├── utils/            # 工具函数（http, auth）
@@ -137,6 +145,7 @@
 │   │   ├── document/         # 单证工具
 │   │   ├── ai/               # AI获客四模块
 │   │   ├── maps-scraper/     # 地图采集（Playwright）
+│   │   ├── analytics/        # 访问统计
 │   │   ├── dashboard/        # 仪表盘统计
 │   │   ├── export/           # 数据导出/同步到前台
 │   │   ├── upload/           # 文件上传
@@ -151,8 +160,8 @@
 │   └── bootstrap.ts          # 本地启动入口
 ├── shared/                    # 前后端共享类型
 │   └── api.interface.ts
-├── data/                      # SQLite 数据库文件（运行时生成）
-├── public/uploads/            # 上传文件存储
+├── data/                      # SQLite 数据库文件（运行时自动生成）
+├── server/public/uploads/     # 上传文件存储（运行时自动创建）
 ├── dev.js                     # 本地开发启动脚本（前后端并发）
 ├── vite.config.ts
 ├── tsconfig.json
@@ -161,9 +170,9 @@
 
 ## 环境要求
 
-- **Node.js** >= 18.0.0（推荐 20.x）
+- **Node.js** >= 18 且 < 21（**必须使用 20.x**，Node 22+ 会导致 better-sqlite3 原生模块 ABI 不兼容而崩溃）
 - **npm** >= 9.0.0
-- **Playwright Chromium**（地图采集功能需要，运行 `npx playwright install chromium`）
+- **Playwright Chromium**（地图采集功能需要，运行 `npm run setup`）
 
 > ⚠️ 不要使用 Node 22+，better-sqlite3@11 在 Node 20 下稳定运行。
 
@@ -178,38 +187,24 @@ npm install
 ### 2. 安装 Playwright 浏览器（地图采集功能需要）
 
 ```bash
-npx playwright install chromium
+npm run setup
 ```
 
 ### 3. 配置环境变量
 
-复制 `.env.example` 为 `.env`（如不存在则手动创建）：
+复制 `.env.example` 为 `.env`：
 
-```env
-# 服务端口
-PORT=3000
-
-# JWT 密钥（生产环境务必修改）
-JWT_SECRET=your-secret-key-change-in-production
-JWT_EXPIRES_IN=7d
-
-# 前台项目数据目录（用于一键同步）
-FRONTEND_DATA_DIR=C:\path\to\toy-website\src\data
-FRONTEND_UPLOAD_DIR=C:\path\to\toy-website\public\images\uploads
-
-# 上传目录
-UPLOAD_DIR=./server/public/uploads
-
+```bash
+cp .env.example .env
+# Windows: copy .env.example .env
 ```
+
+编辑 `.env`，至少修改 `JWT_SECRET`。如前台项目不在 `../toy-website-next/`，设置 `FRONTEND_DATA_DIR`。
 
 ### 4. 启动开发服务器
 
 ```bash
-# 方式一：通过 npm（推荐）
 npm run dev
-
-# 方式二：直接运行启动脚本
-node dev.js
 ```
 
 `dev.js` 会同时启动后端（NestJS，端口 3000）和前端（Vite，端口 8080）。
@@ -227,52 +222,41 @@ node dev.js
 
 首次启动会自动创建数据库表和默认管理员账号。
 
+## 新机器启动清单
 
-
-
-
-
-### 2. 克隆并安装依赖
+在一台全新设备上从 0 到跑起来，按以下顺序执行：
 
 ```bash
+# 1. 确认 Node 版本（必须 18.x 或 20.x，不能 22+）
+node -v
+
+# 2. 安装依赖
+npm install
+
+# 3. 安装 Playwright Chromium（地图采集用）
+npm run setup
+
+# 4. 复制环境变量
+cp .env.example .env
+# Windows: copy .env.example .env
+
+# 5. 编辑 .env，修改 JWT_SECRET（生产环境必须改）
+#    如前台项目不在 ../toy-website-next/，设置 FRONTEND_DATA_DIR
+
+# 6. 启动
+npm run dev
 ```
 
-### 3. 修改配置文件
+启动后访问 http://localhost:8080，默认账号 admin / admin123。
 
-
-```toml
-
-# 日志级别改为 INFO，能看到启动信息
-
-```
-
-
-
-
-```python
-task_dir = utils.task_dir()
-
-# public_dir = utils.public_dir()
-```
-
-### 5. 启动 API 服务
-
-```bash
-```
-
-
-
-
-
-### 7. 验证连接
-
+> 以下目录会在首次运行时自动创建，无需手动建：`data/`（数据库）、`server/public/uploads/`（上传文件）。
 
 ## 常用命令
 
 | 命令 | 说明 |
 |------|------|
-| `npm run dev` | 启动前后端开发服务器（等同于 `node dev.js`，推荐） |
-| `node dev.js` | 直接运行启动脚本，前后端并发启动 |
+| `npm run dev` | 启动前后端开发服务器（推荐） |
+| `npm run setup` | 安装 Playwright Chromium 浏览器 |
 | `npm run dev:server` | 仅启动后端（NestJS watch模式） |
 | `npm run dev:client` | 仅启动前端（Vite） |
 | `npm run build` | 构建生产版本（前后端） |
@@ -280,7 +264,6 @@ task_dir = utils.task_dir()
 | `npm run build:client` | 仅构建前端 |
 | `npm run start` | 启动生产构建 |
 | `npm run type:check` | 前后端类型检查 |
-| `npx playwright install chromium` | 安装 Playwright 浏览器 |
 
 ## API 概览
 
@@ -302,6 +285,7 @@ Authorization: Bearer <token>
 - `POST /api/products/:id/featured` — 切换推荐（需登录）
 - `DELETE /api/products/batch` — 批量删除（需登录）
 - `POST /api/products/import` — 批量Excel导入（需登录）
+- `POST /api/products/:id/images` — 单独上传产品图片（需登录）
 
 ### 分类
 - `GET /api/categories` — 分类列表
@@ -321,6 +305,7 @@ Authorization: Bearer <token>
 - `GET /api/inquiries/:id` — 询盘详情
 - `PUT /api/inquiries/:id/status` — 更新状态（需登录）
 - `DELETE /api/inquiries/:id` — 删除询盘（需登录）
+- `POST /api/inquiries/:id/quotation` — 一键生成报价单（需登录）
 
 ### 客户管理 CRM
 - `GET /api/customers` — 客户列表（搜索、状态筛选、优先级、分页）
@@ -352,6 +337,9 @@ Authorization: Bearer <token>
 - `GET /api/maps-scraper/presets` — 预设列表
 - `POST /api/maps-scraper/presets` — 保存预设（需登录）
 
+### 访问统计
+- `POST /api/public/track` — 前台访问上报（公开）
+- `GET /api/analytics/overview` — 统计概览（需登录）
 
 ### 数据导出
 - `POST /api/export/sync-to-frontend` — 同步数据到前台项目（需登录）
@@ -369,10 +357,10 @@ Authorization: Bearer <token>
 | `category` | 产品分类 |
 | `product` | 产品 |
 | `blog_post` | 博客文章 |
-| `inquiry` | 询盘 |
+| `inquiry` | 询盘（含 attachments 附件字段） |
 | `customer` | 客户（CRM） |
 | `customer_followup` | 客户跟进记录 |
-| `document` | 单证 |
+| `document` | 单证（含 source_inquiry_id 防重复） |
 | `ai_lead` | AI获客线索 |
 | `ai_intelligence_report` | AI背调报告 |
 | `ai_outreach` | AI开发记录 |
@@ -381,6 +369,7 @@ Authorization: Bearer <token>
 | `maps_scraper_task` | 地图采集任务 |
 | `maps_scraper_result` | 地图采集结果 |
 | `maps_scraper_preset` | 地图采集预设 |
+| `site_visit` | 网站访问记录 |
 
 ### 数据库文件
 
@@ -388,13 +377,12 @@ SQLite 数据库文件位于 `./data/app.db`，首次启动自动创建。如需
 
 ## 与前台项目同步
 
-本后台与前台玩具网站（`toy-website`）配合使用：
+本后台与前台玩具网站（`toy-website-next`）配合使用：
 
-1. 在后台 `.env` 中配置 `FRONTEND_DATA_DIR` 指向前台的 `src/data` 目录
-2. 配置 `FRONTEND_UPLOAD_DIR` 指向前台的 `public/images/uploads` 目录
-3. 在后台「系统设置」页面点击「同步到前台」
-4. 后台会将产品/分类/博客数据写入前台 JSON 文件，并复制上传的图片
-5. 前台项目刷新即可看到更新
+1. 前台项目默认路径为 `../toy-website-next/`，如不同请在 `.env` 中设置 `FRONTEND_DATA_DIR` 指向前台的 `src/data` 目录
+2. 在后台「系统设置」页面点击「同步到前台」
+3. 后台会将产品/分类/博客数据写入前台 JSON 文件，并复制上传的图片
+4. 前台项目刷新即可看到更新
 
 前台数据文件：
 - `src/data/products.json`
@@ -410,11 +398,7 @@ npm run build
 npm run start
 ```
 
-### Vercel / 其他平台
-
-后端使用 NestJS，可部署到任何支持 Node.js 的平台。前端构建产物在 `dist/client/`，可部署到静态托管服务。
-
-建议使用 PM2 管理后端进程：
+### PM2 进程管理
 
 ```bash
 npm install -g pm2
@@ -471,9 +455,13 @@ server {
 
 格式：`C` + 4位年份 + 6位序号，例如 `C2026000001`。每年从 000001 重新计数，创建客户时自动生成。
 
+### 报价单编号规则
+
+格式：`LVC` + YYYYMMDD + 3位随机数 + 客户公司/名字前两位缩写，例如 `LVC20260329123TD`。
+
 ### 侧边栏菜单分组
 
-侧边栏菜单分为 7 组可折叠目录：工作台、产品中心、内容管理、业务管理、单证工具、AI获客、系统。在 `client/src/components/Layout.tsx` 的 `NAV_GROUPS` 中配置。
+侧边栏菜单分为可折叠父子目录，在 `client/src/components/Layout.tsx` 的 `NAV_GROUPS` 中配置。
 
 ## 常见问题
 
@@ -487,18 +475,16 @@ A: 修改 `dev.js` 中的端口配置，或杀死占用进程：`taskkill /F /IM
 A: 删除 `./data/app.db` 后重启，会重新创建默认账号 admin/admin123。
 
 ### Q: 前台看不到后台更新的产品？
-A: 检查 `.env` 中 `FRONTEND_DATA_DIR` 路径是否正确，然后在「系统设置」页面点击同步。
+A: 检查 `.env` 中 `FRONTEND_DATA_DIR` 路径是否正确（默认 `../toy-website-next/src/data`），然后在「系统设置」页面点击同步。
 
 ### Q: 地图采集报错 "Executable doesn't exist"？
-A: Playwright 浏览器未安装，运行 `npx playwright install chromium`。
+A: Playwright 浏览器未安装，运行 `npm run setup`。
 
+### Q: 上传附件报错 ENOENT no such file or directory？
+A: `server/public/uploads/` 目录不存在。新版已在启动时自动创建，重启服务即可。
 
-
-
-
-
-### Q: 地图采集结果中邮箱显示 jpg 等无效内容？
-A: 已在后端自动过滤图片/文档扩展名，升级到最新版本即可。
+### Q: 新机器拉代码后启动报错？
+A: 按上方「新机器启动清单」逐步执行，特别注意 Node 版本必须 < 21。
 
 ## License
 
