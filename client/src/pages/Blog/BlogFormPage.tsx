@@ -29,8 +29,50 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import Image from '@/components/ui/image';
+import RichTextEditor from '@/components/RichTextEditor';
 import { blogPostsApi } from '@/api/index';
 import type { BlogPost } from '@shared/api.interface';
+
+// 将 string[] 段落转为 HTML
+function paragraphsToHtml(paragraphs: string[]): string {
+  if (!paragraphs || paragraphs.length === 0) return '';
+  return paragraphs
+    .map((p) => {
+      const trimmed = p.trim();
+      if (!trimmed) return '';
+      // 如果已经是 HTML 块，直接使用
+      if (/^<(h[23]|ul|ol|p|div|blockquote)/i.test(trimmed)) {
+        return trimmed;
+      }
+      return `<p>${trimmed}</p>`;
+    })
+    .join('');
+}
+
+// 将 HTML 转为 string[] 段落
+function htmlToParagraphs(html: string): string[] {
+  if (!html || !html.trim()) return [];
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+  const container = doc.body.firstChild as HTMLElement;
+  const blocks: string[] = [];
+  container.childNodes.forEach((node) => {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'p' || tag === 'div') {
+        const inner = el.innerHTML.trim();
+        if (inner) blocks.push(inner);
+      } else if (tag === 'h2' || tag === 'h3' || tag === 'ul' || tag === 'ol' || tag === 'blockquote') {
+        blocks.push(el.outerHTML);
+      }
+    } else if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent?.trim();
+      if (text) blocks.push(text);
+    }
+  });
+  return blocks;
+}
 
 const BlogFormPage = () => {
   const navigate = useNavigate();
@@ -93,9 +135,7 @@ const BlogFormPage = () => {
         setDate(post.date);
         setReadingTime(post.readingTime);
         setCoverImage(post.coverImage);
-        setContent(
-          post.content && post.content.length > 0 ? post.content.join('\n\n') : ''
-        );
+        setContent(paragraphsToHtml(post.content || []));
       } catch (err: unknown) {
         logger.error('加载文章失败', err);
         toast.error('加载文章失败');
@@ -157,7 +197,7 @@ const BlogFormPage = () => {
       date,
       readingTime,
       coverImage,
-      content: content.split(/\n\s*\n/).map((p: string) => p.trim()).filter((p: string) => p !== ''),
+      content: htmlToParagraphs(content),
     };
   };
 
@@ -346,20 +386,17 @@ const BlogFormPage = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">正文内容</CardTitle>
-          <CardDescription>输入文章正文，段落之间用空行分隔，保存时自动分段</CardDescription>
+          <CardDescription>支持加粗、斜体、标题、列表、链接等富文本格式</CardDescription>
         </CardHeader>
         <CardContent>
-          <Textarea
+          <RichTextEditor
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="在此输入文章正文内容...
-
-段落之间用空行分隔，会自动保存为多个段落。"
-            rows={16}
-            className="resize-y min-h-[300px] text-base leading-relaxed"
+            onChange={setContent}
+            placeholder="在此输入文章正文内容..."
+            minHeight={300}
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            当前正文约 {content.length} 字，{content.split(/\n\s*\n/).filter(p => p.trim()).length} 个段落
+            当前正文约 {content.replace(/<[^>]*>/g, '').length} 字，{htmlToParagraphs(content).length} 个段落
           </p>
         </CardContent>
       </Card>
