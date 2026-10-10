@@ -700,7 +700,7 @@ const InquiriesPage = () => {
                        {detail.attachments.map((att, idx) => {
                          const ext = att.name.split('.').pop()?.toUpperCase() || 'FILE';
                          const isImg = ['JPG', 'PNG', 'GIF', 'WEBP', 'SVG'].includes(ext);
-                         const fullUrl = att.url.startsWith('http') ? att.url : `http://localhost:3000${att.url}`;
+                         const fullUrl = att.url.startsWith('http') ? att.url : att.url;
                          return (
                            <button
                              key={idx}
@@ -821,7 +821,7 @@ const InquiriesPage = () => {
             <div className="flex items-center gap-2">
               {previewAtt && (
                 <a
-                  href={previewAtt.url.startsWith("http") ? previewAtt.url : `http://localhost:3000${previewAtt.url}`}
+                  href={previewAtt.url.startsWith("http") ? previewAtt.url : previewAtt.url}
                   download={previewAtt.name}
                   className="text-xs text-primary hover:underline"
                 >
@@ -836,7 +836,7 @@ const InquiriesPage = () => {
           <div className="flex-1 bg-muted/30 overflow-auto">
             {previewAtt && (
               <FilePreview
-                url={previewAtt.url.startsWith("http") ? previewAtt.url : `http://localhost:3000${previewAtt.url}`}
+                url={previewAtt.url.startsWith("http") ? previewAtt.url : previewAtt.url}
                 filename={previewAtt.name}
               />
             )}
