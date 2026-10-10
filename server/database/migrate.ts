@@ -382,46 +382,7 @@ export async function migrateAndSeed(): Promise<void> {
 
   // Product seeding removed — no default demo products
 
-  const blogRow = db.select().from(blogPost).limit(1).get();
-  if (!blogRow) {
-    logger.log('Seeding blog posts...');
-    db.insert(blogPost)
-      .values([
-        {
-          title: 'Top 10 Educational Toys for Kids in 2026',
-          slug: 'top-10-educational-toys-2026',
-          excerpt:
-            'Discover the best educational toys that combine fun with learning, carefully selected by our toy experts.',
-          category: 'Educational',
-          author: 'Toy Experts Team',
-          authorAvatar: '',
-          date: '2026-08-15',
-          readingTime: '5 min read',
-          coverImage: '',
-          content: [
-            'Educational toys play a crucial role in child development. They help build cognitive skills, improve creativity, and make learning fun.',
-            'In this article, we have curated the top 10 educational toys for 2026 that every parent should consider.',
-          ],
-        },
-        {
-          title: 'How to Choose the Right RC Car for Your Child',
-          slug: 'choose-right-rc-car',
-          excerpt:
-            'A complete guide to selecting the perfect remote control car based on age, skill level, and interests.',
-          category: 'RC Toys',
-          author: 'Mike Johnson',
-          authorAvatar: '',
-          date: '2026-08-10',
-          readingTime: '4 min read',
-          coverImage: '',
-          content: [
-            'RC cars are a classic toy that never goes out of style. But with so many options available, choosing the right one can be overwhelming.',
-            'Consider factors like age appropriateness, speed, battery life, and durability when making your selection.',
-          ],
-        },
-      ])
-      .run();
-  }
+  // Blog seeding removed — no default demo blog posts
 
   // Inquiry seeding removed — no default demo inquiries
 
