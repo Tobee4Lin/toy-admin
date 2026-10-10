@@ -380,101 +380,7 @@ export async function migrateAndSeed(): Promise<void> {
       .run();
   }
 
-  const prodRow = db.select().from(product).limit(1).get();
-  if (!prodRow) {
-    logger.log('Seeding products...');
-    db.insert(product)
-      .values([
-        {
-          name: 'Summer Beach Bucket Set',
-          slug: 'summer-beach-bucket-set',
-          itemNumber: 'BT-2001',
-          category: 'beach-toys',
-          description:
-            'Complete beach bucket set with 8 pieces including bucket, shovel, rake, sand molds and more. Made of durable non-toxic plastic.',
-          features: [
-            '8-piece set',
-            'Non-toxic BPA-free plastic',
-            'Bright colors',
-            'Suitable for ages 3+',
-          ],
-          specifications: {
-            Material: 'PP Plastic',
-            'Package Size': '28x20x15 cm',
-            Weight: '350g',
-            MOQ: '500 pcs',
-          },
-          moq: 500,
-          customizationAvailable: true,
-          imageUrl: '',
-          gallery: [],
-          packagingInfo: 'Color box packaging',
-          leadTime: '30-35 days',
-          ageGroup: '3+ years',
-          priceRange: '$1.50 - $2.50',
-          isFeatured: true,
-        },
-        {
-          name: 'Creative Building Blocks 500pcs',
-          slug: 'creative-building-blocks-500pcs',
-          itemNumber: 'BB-3001',
-          category: 'building-blocks',
-          description:
-            '500 pieces creative building blocks set. Compatible with major brands. Includes wheels, windows, doors and special pieces.',
-          features: [
-            '500 pieces',
-            'Compatible with major brands',
-            'ABS material',
-            'Storage bucket included',
-          ],
-          specifications: {
-            Material: 'ABS Plastic',
-            'Package Size': '35x25x20 cm',
-            Weight: '1.2kg',
-            MOQ: '300 pcs',
-          },
-          moq: 300,
-          customizationAvailable: true,
-          imageUrl: '',
-          gallery: [],
-          packagingInfo: 'Storage bucket with color label',
-          leadTime: '25-30 days',
-          ageGroup: '6+ years',
-          priceRange: '$8.00 - $12.00',
-          isFeatured: true,
-        },
-        {
-          name: 'RC High Speed Car',
-          slug: 'rc-high-speed-car',
-          itemNumber: 'RC-4001',
-          category: 'rc-toys',
-          description:
-            'High speed remote control car with 2.4GHz remote control. Rechargeable battery. Top speed 25km/h.',
-          features: [
-            '2.4GHz remote control',
-            '25km/h top speed',
-            'Rechargeable battery',
-            'Shock absorption system',
-          ],
-          specifications: {
-            'Control Distance': '50 meters',
-            'Battery Life': '30 minutes',
-            'Car Size': '28x15x8 cm',
-            MOQ: '200 pcs',
-          },
-          moq: 200,
-          customizationAvailable: true,
-          imageUrl: '',
-          gallery: [],
-          packagingInfo: 'Display box',
-          leadTime: '35-40 days',
-          ageGroup: '8+ years',
-          priceRange: '$15.00 - $22.00',
-          isFeatured: true,
-        },
-      ])
-      .run();
-  }
+  // Product seeding removed — no default demo products
 
   const blogRow = db.select().from(blogPost).limit(1).get();
   if (!blogRow) {
@@ -517,53 +423,7 @@ export async function migrateAndSeed(): Promise<void> {
       .run();
   }
 
-  const inqRow = db.select().from(inquiry).limit(1).get();
-  if (!inqRow) {
-    logger.log('Seeding sample inquiries...');
-    const now = Date.now();
-    db.insert(inquiry)
-      .values([
-        {
-          name: 'John Smith',
-          company: 'ABC Toys Inc.',
-          country: 'United States',
-          email: 'john@abctoys.com',
-          whatsapp: '+1 555 0123',
-          estimatedQuantity: '5000 units',
-          productName: 'Summer Beach Bucket Set',
-          productItemNumber: 'BT-2001',
-          productCategory: 'beach-toys',
-          pageUrl: '/products/beach-toys/summer-beach-bucket-set',
-          message:
-            'Hello, I am interested in your beach bucket set. Could you please provide FOB pricing for 5000 units? Also, do you offer custom branding on the bucket? We would need our logo printed.',
-          source: 'rfq',
-          status: 'replied',
-          selectedProducts: [],
-          createdAt: new Date(now - 86400000 * 5),
-          updatedAt: new Date(now - 86400000 * 3),
-        },
-        {
-          name: 'Robert Wilson',
-          company: 'PlayWorld Australia',
-          country: 'Australia',
-          email: 'robert@playworld.com.au',
-          whatsapp: '+61 412 345 678',
-          estimatedQuantity: '1000 units',
-          productName: 'RC High Speed Car',
-          productItemNumber: 'RC-4001',
-          productCategory: 'rc-toys',
-          pageUrl: '/products/rc-toys/rc-high-speed-car',
-          message:
-            "G'day, Interested in your RC high speed car. Can you provide specifications and C-tick certification for the Australian market? Also, we need samples for testing. Please advise on sample cost and delivery time to Sydney.",
-          source: 'rfq',
-          status: 'archived',
-          selectedProducts: [],
-          createdAt: new Date(now - 86400000 * 10),
-          updatedAt: new Date(now - 86400000 * 8),
-        },
-      ])
-      .run();
-  }
+  // Inquiry seeding removed — no default demo inquiries
 
   // Maps Scraper tables
   db.run(`
