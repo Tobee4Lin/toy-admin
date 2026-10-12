@@ -1,4 +1,8 @@
-# Toy Admin Dashboard — 玩具B2B后台管理系统
+# Toy Admin Dashboard — 玩具工厂后台管理系统
+
+**线上地址**：https://levichtoys.com/admin/
+**部署位置**：Hostinger KVM VPS，`/var/www/toy-admin`
+**PM2 进程**：`toy-admin-api`（端口 3000）
 
 
 ## 技术栈
@@ -95,6 +99,8 @@
 - PV / UV / 今日 / 昨日 统计卡片
 - 7/30/90 天访问趋势图
 - 热门页面、来源、设备分布
+- 访问者 IP、国家/地区、城市信息
+- 国家分布卡片、最近访客表格
 - 服务端 UA 过滤 60+ 种爬虫，同会话同路径 30 分钟去重
 
 ### 数据导出 Export
@@ -389,49 +395,53 @@ SQLite 数据库文件位于 `./data/app.db`，首次启动自动创建。如需
 - `src/data/categories.json`
 - `src/data/blog.json`
 
-## 部署
-
-### 本地构建
+## 部署（Hostinger VPS 生产环境）
 
 ```bash
+cd /var/www/toy-admin
+git pull
 npm run build
-npm run start
+pm2 restart toy-admin-api
 ```
 
-### PM2 进程管理
+首次部署需：
+1. `npm install`
+2. 安装 Playwright：`npx playwright install chromium`
+3. 创建 `.env`，设置 `JWT_SECRET`
+4. `pm2 start dist/server/bootstrap.js --name toy-admin-api`
 
-```bash
-npm install -g pm2
-pm2 start dist/server/main.js --name toy-admin
-pm2 save
-pm2 startup
-```
-
-### Nginx 反向代理示例
+### Nginx 反向代理（生产环境 levichtoys.com）
 
 ```nginx
 server {
-    listen 80;
-    server_name admin.yourdomain.com;
+    listen 443 ssl;
+    server_name levichtoys.com;
 
-    # 前端静态文件
-    root /var/www/toy-admin/dist/client;
-    index index.html;
-
+    # 前台 Next.js
     location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # 后端API
-    location /api/ {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://127.0.0.1:3001;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # 后台 API
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     # 上传文件
     location /uploads/ {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://127.0.0.1:3000;
+    }
+
+    # 后台管理 SPA（静态文件）
+    location /admin/ {
+        alias /var/www/toy-admin/dist/client/;
+        try_files $uri $uri/ /admin/index.html;
     }
 }
 ```
