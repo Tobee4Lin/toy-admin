@@ -522,7 +522,7 @@ export async function migrateAndSeed(): Promise<void> {
   db.run('CREATE INDEX IF NOT EXISTS idx_site_visit_visitor ON site_visit(visitor_id)');
 
   // Add geo columns to site_visit (for existing databases)
-  const visitCols = db.prepare(`PRAGMA table_info(site_visit)`).all() as Array<{ name: string }>;
+  const visitCols = db.all(`PRAGMA table_info(site_visit)`) as { name: string }[];
   if (!visitCols.find((c) => c.name === 'ip')) {
     db.run('ALTER TABLE site_visit ADD COLUMN ip TEXT');
   }

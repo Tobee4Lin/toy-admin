@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { join } from 'path';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { migrateAndSeed } from './database/migrate';
@@ -17,6 +18,9 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe({ transform: true, forbidUnknownValues: false }));
+
+  // 静态文件服务（上传的图片等）
+  app.useStaticAssets(join(process.cwd(), 'public'), { prefix: '/uploads/' });
 
   // 放大请求体限制，避免批量导入（174 条产品等）触发 PayloadTooLargeError
   app.useBodyParser('json', { limit: '50mb' });
