@@ -105,13 +105,9 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: 'ai',
-    label: 'AI 获客',
-    icon: Sparkles,
+    label: '获客工具',
+    icon: MapPin,
     items: [
-      { path: "/ai-lead", label: "AI获客", icon: Search },
-      { path: "/ai-intelligence", label: "AI背调", icon: Brain },
-      { path: "/ai-outreach", label: "AI开发", icon: Send },
-      { path: "/email-center", label: "邮箱中心", icon: Mail },
       { path: "/maps-scraper", label: "地图采集", icon: MapPin },
     ],
   },

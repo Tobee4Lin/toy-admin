@@ -16,10 +16,6 @@ import DocumentsPage from './pages/Documents/DocumentsPage';
 import DocumentEditor from './pages/Documents/DocumentEditor';
 import SettingsPage from './pages/Settings/SettingsPage';
 import LoginPage from './pages/Login/LoginPage';
-import AiLeadPage from './pages/AiLead/AiLeadPage';
-import AiIntelligencePage from './pages/AiIntelligence/AiIntelligencePage';
-import AiOutreachPage from './pages/AiOutreach/AiOutreachPage';
-import EmailCenterPage from './pages/EmailCenter/EmailCenterPage';
 import MapsScraperPage from './pages/MapsScraper/MapsScraperPage';
 
 const RoutesComponent = () => {
@@ -41,10 +37,6 @@ const RoutesComponent = () => {
         <Route path="documents" element={<DocumentsPage />} />
         <Route path="documents/new" element={<DocumentEditor />} />
         <Route path="documents/:id" element={<DocumentEditor />} />
-        <Route path="ai-lead" element={<AiLeadPage />} />
-        <Route path="ai-intelligence" element={<AiIntelligencePage />} />
-        <Route path="ai-outreach" element={<AiOutreachPage />} />
-        <Route path="email-center" element={<EmailCenterPage />} />
         <Route path="maps-scraper" element={<MapsScraperPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
