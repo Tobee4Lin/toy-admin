@@ -146,6 +146,42 @@ const BlogFormPage = () => {
     loadPost();
   }, [id]);
 
+  // 新建博客时：自动填充上次使用的分类、作者、头像、日期
+  useEffect(() => {
+    if (id) return; // 编辑模式不处理
+
+    // 先从 localStorage 读取
+    try {
+      const saved = localStorage.getItem('blog-defaults');
+      if (saved) {
+        const defaults = JSON.parse(saved);
+        if (defaults.category) setCategory(defaults.category);
+        if (defaults.author) setAuthor(defaults.author);
+        if (defaults.authorAvatar) setAuthorAvatar(defaults.authorAvatar);
+      }
+    } catch { /* ignore */ }
+
+    // 默认日期为今天
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    setDate(todayStr);
+
+    // 如果 localStorage 没有，从最新一篇博客获取默认值
+    (async () => {
+      try {
+        const list = await blogPostsApi.listBlogPosts({ pageSize: 1 });
+        if (list.items && list.items.length > 0) {
+          const latest = list.items[0];
+          if (!localStorage.getItem('blog-defaults')) {
+            setCategory(latest.category || '');
+            setAuthor(latest.author || '');
+            setAuthorAvatar(latest.authorAvatar || '');
+          }
+        }
+      } catch { /* ignore */ }
+    })();
+  }, [id]);
+
   // 图片上传
   const handleAvatarUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -222,6 +258,8 @@ const BlogFormPage = () => {
       } else {
         await blogPostsApi.createBlogPost(collectData());
       }
+      // 保存常用字段到 localStorage，下次新建自动填充
+      localStorage.setItem('blog-defaults', JSON.stringify({ category, author, authorAvatar }));
       toast.success(isEdit ? '文章更新成功' : '文章创建成功');
       navigate('/blog');
     } catch (err: unknown) {
@@ -242,9 +280,10 @@ const BlogFormPage = () => {
       } else {
         const created = await blogPostsApi.createBlogPost(collectData());
         savedId = created.id;
-        // 新建后切换到编辑模式
         navigate(`/blog/${savedId}/edit`, { replace: true });
       }
+      // 保存常用字段到 localStorage
+      localStorage.setItem('blog-defaults', JSON.stringify({ category, author, authorAvatar }));
       toast.success('保存成功');
     } catch (err: unknown) {
       logger.error('保存文章失败', err);
