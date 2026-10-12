@@ -20,11 +20,28 @@ export interface AnalyticsOverview {
   topPages: NameValue[];
   topReferrers: NameValue[];
   devices: NameValue[];
+  countries: NameValue[];
+}
+
+export interface RecentVisitor {
+  id: number;
+  path: string;
+  ip: string | null;
+  country: string | null;
+  region: string | null;
+  city: string | null;
+  deviceType: string;
+  referrerHost: string | null;
+  createdAt: number;
 }
 
 export const analyticsApi = {
   async getOverview(days = 30): Promise<AnalyticsOverview> {
     const res = await http.get('/api/analytics/overview', { params: { days } });
+    return res.data;
+  },
+  async getVisitors(limit = 50): Promise<RecentVisitor[]> {
+    const res = await http.get('/api/analytics/visitors', { params: { limit } });
     return res.data;
   },
 };

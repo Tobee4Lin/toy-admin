@@ -9,4 +9,9 @@ export class AnalyticsController {
   overview(@Query('days') days?: string) {
     return this.analyticsService.overview(Number(days) || 30);
   }
+
+  @Get('visitors')
+  visitors(@Query('limit') limit?: string) {
+    return this.analyticsService.recentVisitors(Number(limit) || 50);
+  }
 }

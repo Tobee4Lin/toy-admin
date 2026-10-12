@@ -8,6 +8,8 @@ import {
   Smartphone,
   Tablet,
   ExternalLink,
+  MapPin,
+  Globe,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -22,7 +24,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@client/src/components/ui/card';
 import { Button } from '@client/src/components/ui/button';
 import { Skeleton } from '@client/src/components/ui/skeleton';
-import { analyticsApi, type AnalyticsOverview } from '@client/src/api/analytics';
+import { analyticsApi, type AnalyticsOverview, type RecentVisitor } from '@client/src/api/analytics';
 
 const RANGE_OPTIONS = [
   { days: 7, label: '近 7 天' },
@@ -69,13 +71,18 @@ function StatCard({
 export default function AnalyticsPage() {
   const [days, setDays] = useState(30);
   const [data, setData] = useState<AnalyticsOverview | null>(null);
+  const [visitors, setVisitors] = useState<RecentVisitor[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async (d: number) => {
     setLoading(true);
     try {
-      const res = await analyticsApi.getOverview(d);
-      setData(res);
+      const [overview, visitorList] = await Promise.all([
+        analyticsApi.getOverview(d),
+        analyticsApi.getVisitors(50),
+      ]);
+      setData(overview);
+      setVisitors(visitorList);
     } catch {
       setData(null);
     } finally {
@@ -270,22 +277,22 @@ export default function AnalyticsPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>来源网站</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="size-4" /> 国家/地区分布
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {data.topReferrers.length === 0 ? (
+                  {(!data.countries || data.countries.length === 0) ? (
                     <p className="py-4 text-center text-sm text-muted-foreground">
-                      暂无外部来源
+                      暂无地理数据
                     </p>
                   ) : (
                     <ul className="space-y-2">
-                      {data.topReferrers.map((r) => (
-                        <li key={r.name} className="flex items-center gap-2 text-sm">
-                          <ExternalLink className="size-3.5 text-muted-foreground" />
-                          <span className="flex-1 truncate" title={r.name}>
-                            {r.name}
-                          </span>
-                          <span className="tabular-nums text-muted-foreground">{r.value}</span>
+                      {data.countries.slice(0, 10).map((c) => (
+                        <li key={c.name} className="flex items-center gap-2 text-sm">
+                          <MapPin className="size-3.5 text-muted-foreground" />
+                          <span className="flex-1 truncate">{c.name}</span>
+                          <span className="tabular-nums text-muted-foreground">{c.value}</span>
                         </li>
                       ))}
                     </ul>
@@ -294,6 +301,62 @@ export default function AnalyticsPage() {
               </Card>
             </div>
           </div>
+
+          {/* Recent Visitors Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="size-4" /> 最近访客
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {visitors.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">暂无访问记录</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs text-muted-foreground">
+                        <th className="pb-2 pr-4 font-medium">时间</th>
+                        <th className="pb-2 pr-4 font-medium">IP</th>
+                        <th className="pb-2 pr-4 font-medium">国家/地区</th>
+                        <th className="pb-2 pr-4 font-medium">访问页面</th>
+                        <th className="pb-2 pr-4 font-medium">设备</th>
+                        <th className="pb-2 font-medium">来源</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visitors.map((v) => (
+                        <tr key={v.id} className="border-b border-border/50 last:border-0">
+                          <td className="py-2 pr-4 whitespace-nowrap text-xs text-muted-foreground">
+                            {new Date(v.createdAt).toLocaleString('zh-CN', {
+                              month: '2-digit', day: '2-digit',
+                              hour: '2-digit', minute: '2-digit',
+                            })}
+                          </td>
+                          <td className="py-2 pr-4 font-mono text-xs">{v.ip || '-'}</td>
+                          <td className="py-2 pr-4 text-xs">
+                            {v.country ? (
+                              <span>
+                                {v.country}{v.city ? ` · ${v.city}` : ''}
+                              </span>
+                            ) : '-'}
+                          </td>
+                          <td className="py-2 pr-4 max-w-[200px] truncate font-mono text-xs" title={v.path}>
+                            {v.path}
+                          </td>
+                          <td className="py-2 pr-4 text-xs capitalize">{v.deviceType}</td>
+                          <td className="py-2 text-xs text-muted-foreground">
+                            {v.referrerHost || '直接访问'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

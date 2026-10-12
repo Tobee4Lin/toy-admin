@@ -502,7 +502,10 @@ export const siteVisit = sqliteTable('site_visit', {
   referrerHost: text('referrer_host'),
   visitorId: text('visitor_id'),
   sessionId: text('session_id'),
+  ip: text('ip'),
   country: text('country'),
+  region: text('region'),
+  city: text('city'),
   deviceType: text('device_type'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()

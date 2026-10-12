@@ -24,6 +24,17 @@ interface NameValue {
   name: string;
   value: number;
 }
+interface VisitorRow {
+  id: number;
+  path: string;
+  ip: string | null;
+  country: string | null;
+  region: string | null;
+  city: string | null;
+  device_type: string | null;
+  referrer_host: string | null;
+  created_at: number;
+}
 
 @Injectable()
 export class AnalyticsService {
@@ -33,7 +44,6 @@ export class AnalyticsService {
 
   static isBot(ua: string | undefined): boolean {
     if (!ua) return true;
-    // Every real modern browser sends a Mozilla-compatible UA.
     if (!ua.includes('Mozilla')) return true;
     return BOT_UA_RE.test(ua);
   }
@@ -41,6 +51,7 @@ export class AnalyticsService {
   async track(
     payload: TrackPayload,
     ua: string,
+    ip: string | null,
   ): Promise<{ recorded: boolean }> {
     if (AnalyticsService.isBot(ua)) return { recorded: false };
 
@@ -71,13 +82,52 @@ export class AnalyticsService {
       if (dup) return { recorded: false };
     }
 
-    this.db.run(sql`
+    // Insert the visit first (without geo data, filled async)
+    const result = this.db.run(sql`
       INSERT INTO site_visit
-        (path, referrer, referrer_host, visitor_id, session_id, device_type)
+        (path, referrer, referrer_host, visitor_id, session_id, ip, device_type)
       VALUES
-        (${path}, ${referrer || null}, ${referrerHost}, ${payload.visitorId || null}, ${payload.sessionId || null}, ${payload.deviceType || null})
+        (${path}, ${referrer || null}, ${referrerHost}, ${payload.visitorId || null}, ${payload.sessionId || null}, ${ip}, ${payload.deviceType || null})
     `);
+
+    // Fire-and-forget: look up geo by IP and update the row
+    if (ip) {
+      const visitId = Number(result.lastInsertRowid);
+      this.lookupGeoAndUpdate(visitId, ip).catch(() => {});
+    }
+
     return { recorded: true };
+  }
+
+  /** Async IP geolocation lookup via ip-api.com (free, 45 req/min) */
+  private async lookupGeoAndUpdate(visitId: number, ip: string): Promise<void> {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(
+        `http://ip-api.com/json/${ip}?fields=status,country,regionName,city`,
+        { signal: controller.signal },
+      );
+      clearTimeout(timeout);
+      if (!res.ok) return;
+      const data = await res.json() as {
+        status: string;
+        country?: string;
+        regionName?: string;
+        city?: string;
+      };
+      if (data.status === 'success') {
+        this.db.run(sql`
+          UPDATE site_visit
+          SET country = ${data.country || null},
+              region = ${data.regionName || null},
+              city = ${data.city || null}
+          WHERE id = ${visitId}
+        `);
+      }
+    } catch {
+      /* ignore network errors */
+    }
   }
 
   async overview(days: number) {
@@ -146,6 +196,12 @@ export class AnalyticsService {
       GROUP BY device_type
     `) as NameValue[];
 
+    const countries = this.db.all(sql`
+      SELECT COALESCE(country, 'Unknown') AS name, COUNT(*) AS value
+      FROM site_visit WHERE created_at >= ${since}
+      GROUP BY country ORDER BY value DESC LIMIT 15
+    `) as NameValue[];
+
     return {
       days: range,
       totals: { pv: Number(pvRow?.c || 0), uv: Number(uvRow?.c || 0) },
@@ -161,6 +217,29 @@ export class AnalyticsService {
       topPages: topPages.map((r) => ({ ...r, value: Number(r.value) })),
       topReferrers: topReferrers.map((r) => ({ ...r, value: Number(r.value) })),
       devices: devices.map((r) => ({ ...r, value: Number(r.value) })),
+      countries: countries.map((r) => ({ ...r, value: Number(r.value) })),
     };
+  }
+
+  /** Get recent visitors with IP and geo info */
+  async recentVisitors(limit = 50) {
+    const rows = this.db.all(sql`
+      SELECT id, path, ip, country, region, city, device_type, referrer_host, created_at
+      FROM site_visit
+      ORDER BY created_at DESC
+      LIMIT ${Math.min(Math.max(Number(limit) || 50, 1), 200)}
+    `) as VisitorRow[];
+
+    return rows.map((r) => ({
+      id: Number(r.id),
+      path: r.path,
+      ip: r.ip || null,
+      country: r.country || null,
+      region: r.region || null,
+      city: r.city || null,
+      deviceType: r.device_type || 'unknown',
+      referrerHost: r.referrer_host || null,
+      createdAt: Number(r.created_at),
+    }));
   }
 }
