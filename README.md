@@ -77,12 +77,6 @@
 - 打印样式优化（A4尺寸、纯白背景、无边框阴影）
 - 单证列表管理、编辑、删除
 
-### AI 获客 AI Lead
-- AI 自动获客：输入产品名称、关键词、目标国家、客户类型，自动生成潜在客户
-- AI 客户背调：输入公司名或网站，生成完整客户情报报告
-- AI 自主开发：根据客户信息个性化生成开发信（Cold Email / LinkedIn / WhatsApp）
-- 邮箱管理中心：连接 Gmail/Outlook/SMTP，AI 识别回复分类并生成建议回复
-
 ### 地图采集 Maps Scraper
 - 基于 **Playwright** 真实采集 Google Maps 商家数据
 - 支持按国家、州/省、城市、关键词采集
@@ -103,15 +97,9 @@
 - 国家分布卡片、最近访客表格
 - 服务端 UA 过滤 60+ 种爬虫，同会话同路径 30 分钟去重
 
-### 数据导出 Export
-- 一键同步产品/分类/博客数据到前台项目 `src/data/` 目录
-- 自动复制上传图片到前台 `public/images/uploads/`
-- 前台刷新即可看到更新
-
 ### 系统设置 Settings
 - 前台数据目录配置
 - 一键同步到前台
-- 数据导出（产品/分类/博客 Excel）
 
 ## 项目结构
 
@@ -129,10 +117,6 @@
 │   │   │   ├── Inquiries/
 │   │   │   ├── Customers/    # 客户管理CRM
 │   │   │   ├── Documents/    # 单证工具
-│   │   │   ├── AiLead/       # AI获客
-│   │   │   ├── AiIntelligence/ # AI背调
-│   │   │   ├── AiOutreach/   # AI开发
-│   │   │   ├── EmailCenter/  # 邮箱中心
 │   │   │   ├── MapsScraper/  # 地图采集
 │   │   │   ├── Analytics/    # 访问统计
 │   │   │   ├── Settings/
@@ -149,7 +133,6 @@
 │   │   ├── inquiry/          # 询盘
 │   │   ├── customer/         # 客户CRM
 │   │   ├── document/         # 单证工具
-│   │   ├── ai/               # AI获客四模块
 │   │   ├── maps-scraper/     # 地图采集（Playwright）
 │   │   ├── analytics/        # 访问统计
 │   │   ├── dashboard/        # 仪表盘统计
@@ -221,12 +204,7 @@ npm run dev
 
 ### 5. 默认账号
 
-```
-用户名：admin
-密码：admin123
-```
-
-首次启动会自动创建数据库表和默认管理员账号。
+首次启动会自动创建数据库表和默认管理员账号。账号信息请在初始化时通过种子数据或数据库直接查看，不在文档中明文记录。
 
 ## 新机器启动清单
 
@@ -253,7 +231,7 @@ cp .env.example .env
 npm run dev
 ```
 
-启动后访问 http://localhost:8080，默认账号 admin / admin123。
+启动后访问 http://localhost:8080，使用首次启动创建的管理员账号登录。
 
 > 以下目录会在首次运行时自动创建，无需手动建：`data/`（数据库）、`server/public/uploads/`（上传文件）。
 
@@ -367,11 +345,6 @@ Authorization: Bearer <token>
 | `customer` | 客户（CRM） |
 | `customer_followup` | 客户跟进记录 |
 | `document` | 单证（含 source_inquiry_id 防重复） |
-| `ai_lead` | AI获客线索 |
-| `ai_intelligence_report` | AI背调报告 |
-| `ai_outreach` | AI开发记录 |
-| `email_account` | 邮箱账号 |
-| `email_message` | 邮件消息 |
 | `maps_scraper_task` | 地图采集任务 |
 | `maps_scraper_result` | 地图采集结果 |
 | `maps_scraper_preset` | 地图采集预设 |
@@ -482,7 +455,7 @@ A: 确保 Node 版本为 18.x 或 20.x，不要用 22+。项目已锁定 better-
 A: 修改 `dev.js` 中的端口配置，或杀死占用进程：`taskkill /F /IM node.exe`（Windows）。
 
 ### Q: 忘记管理员密码？
-A: 删除 `./data/app.db` 后重启，会重新创建默认账号 admin/admin123。
+A: 删除 `./data/app.db` 后重启会重新初始化默认账号；也可通过 SQL 直接更新 admin 表。
 
 ### Q: 前台看不到后台更新的产品？
 A: 检查 `.env` 中 `FRONTEND_DATA_DIR` 路径是否正确（默认 `../toy-website-next/src/data`），然后在「系统设置」页面点击同步。
