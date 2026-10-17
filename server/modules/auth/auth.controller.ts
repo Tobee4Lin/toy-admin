@@ -13,6 +13,16 @@ class LoginDto {
   password!: string;
 }
 
+class ChangePasswordDto {
+  @IsString()
+  @IsNotEmpty()
+  oldPassword!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  newPassword!: string;
+}
+
 @Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -29,5 +39,18 @@ export class AuthController {
       id: req.user.userId,
       username: req.user.username,
     };
+  }
+
+  @Post('change-password')
+  @UseGuards(AuthGuard('jwt'))
+  async changePassword(
+    @Req() req: { user: { userId: number; username: string } },
+    @Body() body: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(
+      req.user.userId,
+      body.oldPassword,
+      body.newPassword,
+    );
   }
 }

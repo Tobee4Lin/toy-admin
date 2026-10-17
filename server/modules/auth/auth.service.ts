@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { compareSync } from 'bcryptjs';
+import { compareSync, hashSync } from 'bcryptjs';
 import { admin } from '../../database/sqlite-schema';
 import { eq } from 'drizzle-orm';
 import type { DbType } from '../../database/db';
@@ -51,5 +51,36 @@ export class AuthService {
       .where(eq(admin.id, id))
       .get();
     return user ?? null;
+  }
+
+  async changePassword(
+    userId: number,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean }> {
+    if (!newPassword || newPassword.length < 6) {
+      throw new BadRequestException('New password must be at least 6 characters');
+    }
+
+    const user = await this.db
+      .select()
+      .from(admin)
+      .where(eq(admin.id, userId))
+      .get();
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!compareSync(oldPassword, user.passwordHash)) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    await this.db
+      .update(admin)
+      .set({ passwordHash: hashSync(newPassword, 10) })
+      .where(eq(admin.id, userId));
+
+    return { success: true };
   }
 }

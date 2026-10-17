@@ -22,6 +22,14 @@ export async function getProfile(): Promise<AdminProfile> {
   return res.data;
 }
 
+export async function changePassword(
+  oldPassword: string,
+  newPassword: string,
+): Promise<{ success: boolean }> {
+  const res = await http.post('/api/auth/change-password', { oldPassword, newPassword });
+  return res.data;
+}
+
 export function useCurrentAdmin() {
   return useQuery({
     queryKey: ['admin-profile'],
