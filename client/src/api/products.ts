@@ -43,6 +43,11 @@ export const batchDeleteProducts = async (
   return res.data;
 };
 
+export const deleteAllProducts = async (): Promise<{ success: boolean; deletedCount: number }> => {
+  const res = await http.delete('/api/products/all');
+  return res.data;
+};
+
 export const toggleFeatured = async (
   id: string,
 ): Promise<{ id: string; isFeatured: boolean }> => {

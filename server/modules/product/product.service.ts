@@ -222,6 +222,15 @@ export class ProductService {
     return { success: true, deletedCount: rows.length };
   }
 
+  // 删除所有产品（一键清空）
+  async removeAll(): Promise<{ success: boolean; deletedCount: number }> {
+    const rows = this.db
+      .delete(schema.product)
+      .returning({ id: schema.product.id })
+      .all();
+    return { success: true, deletedCount: rows.length };
+  }
+
   async toggleFeatured(id: number): Promise<{ id: string; isFeatured: boolean }> {
     const rows = this.db
       .update(schema.product)

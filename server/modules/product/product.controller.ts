@@ -80,6 +80,13 @@ export class ProductController {
     return this.productService.batchRemove(body.ids);
   }
 
+  // 一键删除所有产品（静态路由，必须放在 :id 之前）
+  @Delete('all')
+  @UseGuards(AuthGuard('jwt'))
+  async removeAll() {
+    return this.productService.removeAll();
+  }
+
   // 单独批量给已存在的产品分配图片（图片分批上传，按产品ID匹配）
   @Post('batch-images')
   @UseGuards(AuthGuard('jwt'))

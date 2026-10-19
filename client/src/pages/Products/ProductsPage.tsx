@@ -60,6 +60,7 @@ import {
   listProducts,
   deleteProduct,
   batchDeleteProducts,
+  deleteAllProducts,
   toggleFeatured,
 } from '@/api/products';
 import { listCategories } from '@/api/categories';
@@ -77,6 +78,9 @@ const ProductsPage = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deleteAllLoading, setDeleteAllLoading] = useState(false);
+  const [pageInput, setPageInput] = useState('');
   const [batchImportOpen, setBatchImportOpen] = useState(false);
   const [batchImageOpen, setBatchImageOpen] = useState(false);
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
@@ -116,6 +120,25 @@ const ProductsPage = () => {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  // 同步跳转输入框到当前页
+  useEffect(() => {
+    setPageInput(String(page));
+  }, [page]);
+
+  const handlePageJump = () => {
+    const target = parseInt(pageInput, 10);
+    if (isNaN(target)) {
+      setPageInput(String(page));
+      return;
+    }
+    const clamped = Math.max(1, Math.min(totalPages, target));
+    if (clamped !== page) {
+      setPage(clamped);
+    } else {
+      setPageInput(String(clamped));
+    }
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -209,6 +232,22 @@ const ProductsPage = () => {
     }
   };
 
+  const handleDeleteAll = async () => {
+    setDeleteAllLoading(true);
+    try {
+      const res = await deleteAllProducts();
+      toast.success(`已删除全部 ${res.deletedCount} 个产品`);
+      setDeleteAllOpen(false);
+      setPage(1);
+      fetchProducts();
+    } catch (err: unknown) {
+      logger.error(`删除所有产品失败: ${String(err)}`);
+      toast.error('删除所有产品失败');
+    } finally {
+      setDeleteAllLoading(false);
+    }
+  };
+
   const totalPages = data ? Math.max(1, Math.ceil(data.total / pageSize)) : 1;
   const allSelected =
     data && data.items.length > 0 && selectedIds.length === data.items.length;
@@ -254,6 +293,16 @@ const ProductsPage = () => {
                 <Trash2 className="mr-1.5 size-4" />
                 批量删除
                 {selectedIds.length > 0 && ` (${selectedIds.length})`}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                disabled={!data || data.total === 0}
+                onClick={() => setDeleteAllOpen(true)}
+              >
+                <Trash2 className="mr-1.5 size-4" />
+                一键清空
               </Button>
               <Button
                 variant="outline"
@@ -450,6 +499,24 @@ const ProductsPage = () => {
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <span>跳至</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  onBlur={handlePageJump}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                  className="h-8 w-16 px-2 text-center"
+                />
+                <span>/ {totalPages} 页</span>
+              </div>
             </div>
           )}
         </CardContent>
@@ -492,6 +559,30 @@ const ProductsPage = () => {
               onClick={handleBatchDelete}
             >
               确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete all confirm */}
+      <AlertDialog open={deleteAllOpen} onOpenChange={(open) => !deleteAllLoading && setDeleteAllOpen(open)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除所有产品？</AlertDialogTitle>
+            <AlertDialogDescription>
+              此操作将删除数据库中全部 <strong>{data?.total ?? 0}</strong> 个产品，
+              包括产品名称、规格、图片关联等所有信息，且<strong>不可恢复</strong>。
+              分类、博客、询盘、客户等其他数据不受影响。建议先在「系统设置」同步或备份后再执行。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteAllLoading}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              disabled={deleteAllLoading}
+              onClick={handleDeleteAll}
+            >
+              {deleteAllLoading ? '删除中…' : '确认删除全部'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
