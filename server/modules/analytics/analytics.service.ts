@@ -86,7 +86,7 @@ export function parseUserAgent(ua: string | null | undefined): {
   }
   // Xiaomi/Redmi
   else if (/Redmi|Miui|Xiaomi/.test(s)) {
-    const model = s.match(/; ([^;]+Build/)?.[1]?.trim() || '';
+    const model = s.match(/; ([^;]+)\s+Build/)?.[1]?.trim() || '';
     device = `Xiaomi/Redmi${model ? ' ' + model : ''}`;
   }
   // OPPO/Realme
@@ -125,7 +125,7 @@ export function parseUserAgent(ua: string | null | undefined): {
     device = v === '10.0' ? 'Windows PC' : `Windows (${v})`;
   }
   // Linux
-  else if (/Linux/.test(s) && !Android) device = 'Linux PC';
+  else if (/Linux/.test(s) && !/Android/.test(s)) device = 'Linux PC';
 
   return { device, browser };
 }
