@@ -5,7 +5,7 @@
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import * as XLSX from 'xlsx';
 import * as schema from '../../database/sqlite-schema';
 import { DATABASE_PROVIDER } from '../database/database.module';
@@ -81,7 +81,7 @@ export class ProductService {
       .select()
       .from(schema.product)
       .where(where)
-      .orderBy(desc(schema.product.isFeatured), desc(schema.product.createdAt))
+      .orderBy(desc(schema.product.isFeatured), asc(schema.product.itemNumber))
       .limit(pageSize)
       .offset(offset)
       .all();
