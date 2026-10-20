@@ -321,7 +321,7 @@ export default function AnalyticsPage() {
                         <th className="pb-2 pr-4 font-medium">IP</th>
                         <th className="pb-2 pr-4 font-medium">国家/地区</th>
                         <th className="pb-2 pr-4 font-medium">访问页面</th>
-                        <th className="pb-2 pr-4 font-medium">设备</th>
+                        <th className="pb-2 pr-4 font-medium">设备/浏览器</th>
                         <th className="pb-2 font-medium">来源</th>
                       </tr>
                     </thead>
@@ -345,7 +345,10 @@ export default function AnalyticsPage() {
                           <td className="py-2 pr-4 max-w-[200px] truncate font-mono text-xs" title={v.path}>
                             {v.path}
                           </td>
-                          <td className="py-2 pr-4 text-xs capitalize">{v.deviceType}</td>
+                          <td className="py-2 pr-4 text-xs">
+                            <div className="font-medium">{v.device || v.deviceType || '-'}</div>
+                            {v.browser && <div className="text-muted-foreground text-[10px]">{v.browser}</div>}
+                          </td>
                           <td className="py-2 text-xs text-muted-foreground">
                             {v.referrerHost || '直接访问'}
                           </td>

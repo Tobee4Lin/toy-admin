@@ -532,6 +532,9 @@ export async function migrateAndSeed(): Promise<void> {
   if (!visitCols.find((c) => c.name === 'city')) {
     db.run('ALTER TABLE site_visit ADD COLUMN city TEXT');
   }
+  if (!visitCols.find((c) => c.name === 'user_agent')) {
+    db.run('ALTER TABLE site_visit ADD COLUMN user_agent TEXT');
+  }
 
   logger.log('Database migrations completed successfully.');
 }

@@ -31,6 +31,8 @@ export interface RecentVisitor {
   region: string | null;
   city: string | null;
   deviceType: string;
+  device?: string;
+  browser?: string;
   referrerHost: string | null;
   createdAt: number;
 }

@@ -33,7 +33,101 @@ interface VisitorRow {
   city: string | null;
   device_type: string | null;
   referrer_host: string | null;
+  user_agent: string | null;
   created_at: number;
+}
+
+/**
+ * Parse User-Agent string into a human-readable device + browser label.
+ * No external dependencies — covers common mobile and desktop devices.
+ */
+export function parseUserAgent(ua: string | null | undefined): {
+  device: string;
+  browser: string;
+} {
+  if (!ua) return { device: 'Unknown', browser: 'Unknown' };
+  const s = ua;
+
+  // --- Browser ---
+  let browser = 'Unknown';
+  if (/Edg\//.test(s)) browser = 'Edge';
+  else if (/OPR\//.test(s) || /Opera/.test(s)) browser = 'Opera';
+  else if (/Chrome\//.test(s) && !/Chromium/.test(s)) browser = 'Chrome';
+  else if (/Chromium\//.test(s)) browser = 'Chromium';
+  else if (/Firefox\//.test(s)) browser = 'Firefox';
+  else if (/Safari\//.test(s) && /Version\//.test(s)) browser = 'Safari';
+  else if (/MSIE|Trident/.test(s)) browser = 'IE';
+
+  // --- Device ---
+  let device = 'PC';
+
+  // iPhone
+  const iphoneMatch = s.match(/iPhone(?:OS|\/)?\s*([\d_]+)/);
+  if (iphoneMatch) {
+    const v = iphoneMatch[1].replace(/_/g, '.');
+    device = `iPhone (iOS ${v})`;
+  }
+  // iPad
+  else if (/iPad/.test(s)) {
+    const v = (s.match(/CPU OS (\d_+)/)?.[1] || '').replace(/_/g, '.');
+    device = `iPad (iPadOS ${v || ''})`.trim();
+  }
+  // iPod
+  else if (/iPod/.test(s)) device = 'iPod Touch';
+  // Samsung Galaxy
+  else if (/SM-[A-Z0-9]+/.test(s)) {
+    const model = s.match(/SM-([A-Z0-9]+)/)?.[1] || '';
+    device = `Samsung Galaxy (SM-${model})`;
+  }
+  // Huawei
+  else if (/HUAWEI|Honor/.test(s)) {
+    const model = s.match(/[HN][UAWEI]+\/?([A-Z0-9-]+)/i)?.[1] || '';
+    device = `Huawei/Honor${model ? ' ' + model : ''}`;
+  }
+  // Xiaomi/Redmi
+  else if (/Redmi|Miui|Xiaomi/.test(s)) {
+    const model = s.match(/; ([^;]+Build/)?.[1]?.trim() || '';
+    device = `Xiaomi/Redmi${model ? ' ' + model : ''}`;
+  }
+  // OPPO/Realme
+  else if (/OPPO|Realme|RMX/.test(s)) {
+    const model = s.match(/(OPPO|Realme) ([^;)]+)/i)?.[2]?.trim() || '';
+    device = `${RegExp.$1} ${model}`.trim();
+  }
+  // vivo
+  else if (/vivo V?([0-9]+)/i.test(s)) {
+    device = `vivo ${s.match(/vivo V?([0-9]+)/i)?.[0] || ''}`;
+  }
+  // OnePlus
+  else if (/OnePlus/.test(s)) {
+    const model = s.match(/OnePlus ([A-Z0-9]+)/)?.[1] || '';
+    device = `OnePlus ${model}`.trim();
+  }
+  // Generic Android phone
+  else if (/Android/.test(s) && /Mobile/.test(s)) {
+    const model = s.match(/; ([^;)]+)\s+Build/)?.[1]?.trim() || '';
+    const brand = s.match(/^([A-Z][a-z]+)\s/)?.[1] || '';
+    device = `Android${brand ? ' ' + brand : ''}${model ? ' ' + model : ''}`;
+  }
+  // Android tablet
+  else if (/Android/.test(s)) {
+    const model = s.match(/; ([^;)]+)\s+Build/)?.[1]?.trim() || 'Tablet';
+    device = `Android Tablet (${model})`;
+  }
+  // Mac
+  else if (/Mac OS X/.test(s)) {
+    const v = (s.match(/Mac OS X ([\d_]+)/)?.[1] || '').replace(/_/g, '.');
+    device = `Mac${v ? ' (' + v + ')' : ''}`;
+  }
+  // Windows
+  else if (/Windows NT/.test(s)) {
+    const v = s.match(/Windows NT ([\d.]+)/)?.[1] || '';
+    device = v === '10.0' ? 'Windows PC' : `Windows (${v})`;
+  }
+  // Linux
+  else if (/Linux/.test(s) && !Android) device = 'Linux PC';
+
+  return { device, browser };
 }
 
 @Injectable()
@@ -85,9 +179,9 @@ export class AnalyticsService {
     // Insert the visit first (without geo data, filled async)
     const result = this.db.run(sql`
       INSERT INTO site_visit
-        (path, referrer, referrer_host, visitor_id, session_id, ip, device_type)
+        (path, referrer, referrer_host, visitor_id, session_id, ip, device_type, user_agent)
       VALUES
-        (${path}, ${referrer || null}, ${referrerHost}, ${payload.visitorId || null}, ${payload.sessionId || null}, ${ip}, ${payload.deviceType || null})
+        (${path}, ${referrer || null}, ${referrerHost}, ${payload.visitorId || null}, ${payload.sessionId || null}, ${ip}, ${payload.deviceType || null}, ${ua.slice(0, 500)})
     `);
 
     // Fire-and-forget: look up geo by IP and update the row
@@ -224,22 +318,27 @@ export class AnalyticsService {
   /** Get recent visitors with IP and geo info */
   async recentVisitors(limit = 50) {
     const rows = this.db.all(sql`
-      SELECT id, path, ip, country, region, city, device_type, referrer_host, created_at
+      SELECT id, path, ip, country, region, city, device_type, referrer_host, user_agent, created_at
       FROM site_visit
       ORDER BY created_at DESC
       LIMIT ${Math.min(Math.max(Number(limit) || 50, 1), 200)}
     `) as VisitorRow[];
 
-    return rows.map((r) => ({
-      id: Number(r.id),
-      path: r.path,
-      ip: r.ip || null,
-      country: r.country || null,
-      region: r.region || null,
-      city: r.city || null,
-      deviceType: r.device_type || 'unknown',
-      referrerHost: r.referrer_host || null,
-      createdAt: Number(r.created_at),
-    }));
+    return rows.map((r) => {
+      const parsed = parseUserAgent(r.user_agent);
+      return {
+        id: Number(r.id),
+        path: r.path,
+        ip: r.ip || null,
+        country: r.country || null,
+        region: r.region || null,
+        city: r.city || null,
+        deviceType: r.device_type || 'unknown',
+        device: parsed.device,
+        browser: parsed.browser,
+        referrerHost: r.referrer_host || null,
+        createdAt: Number(r.created_at),
+      };
+    });
   }
 }
