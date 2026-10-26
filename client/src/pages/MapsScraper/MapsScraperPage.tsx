@@ -28,20 +28,164 @@ const COUNTRY_OPTIONS = [
   'Chile', 'Colombia', 'Peru', 'Vietnam', 'Thailand', 'Malaysia',
   'Indonesia', 'Philippines', 'India', 'Pakistan', 'Egypt', 'South Africa',
   'Australia', 'Canada', 'Netherlands', 'Belgium', 'Poland', 'Sweden',
+  'Japan', 'South Korea', 'Russia', 'Ukraine', 'Poland', 'Czech Republic',
+  'Romania', 'Hungary', 'Greece', 'Portugal', 'Austria', 'Switzerland',
+  'Denmark', 'Norway', 'Finland', 'Ireland', 'New Zealand', 'Singapore',
+  'Israel', 'Jordan', 'Kuwait', 'Qatar', 'Oman', 'Bahrain', 'Lebanon',
+  'Morocco', 'Nigeria', 'Kenya', 'Ghana', 'Tanzania', 'Ethiopia',
+  'Bangladesh', 'Sri Lanka', 'Nepal', 'Kazakhstan', 'Uzbekistan',
+  'Ukraine', 'Belarus', 'Serbia', 'Croatia', 'Bulgaria', 'Slovakia',
+  'Slovenia', 'Lithuania', 'Latvia', 'Estonia', 'Iceland', 'Luxembourg',
 ];
+
+// Recommended states/cities per country for toy B2B leads
+const COUNTRY_REGION_MAP: Record<string, { states: string[]; cities: string[] }> = {
+  'United States': {
+    states: ['California', 'Texas', 'New York', 'Florida', 'Illinois', 'New Jersey', 'Georgia', 'Pennsylvania', 'Ohio', 'Washington'],
+    cities: ['Los Angeles', 'New York', 'Chicago', 'Houston', 'Miami', 'Dallas', 'Atlanta', 'Seattle', 'Boston', 'San Francisco'],
+  },
+  'United Kingdom': {
+    states: ['England', 'Scotland', 'Wales', 'Northern Ireland'],
+    cities: ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Leeds', 'Liverpool', 'Bristol'],
+  },
+  'Germany': {
+    states: ['Bavaria', 'North Rhine-Westphalia', 'Baden-Württemberg', 'Berlin', 'Hamburg', 'Hesse'],
+    cities: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt', 'Stuttgart', 'Düsseldorf'],
+  },
+  'France': {
+    states: ['Île-de-France', 'Provence', 'Auvergne-Rhône-Alpes', 'Occitanie'],
+    cities: ['Paris', 'Lyon', 'Marseille', 'Bordeaux', 'Nice', 'Toulouse'],
+  },
+  'Italy': {
+    states: ['Lombardy', 'Lazio', 'Campania', 'Veneto', 'Emilia-Romagna'],
+    cities: ['Milan', 'Rome', 'Naples', 'Turin', 'Florence', 'Bologna'],
+  },
+  'Spain': {
+    states: ['Madrid', 'Catalonia', 'Andalusia', 'Valencia', 'Basque Country'],
+    cities: ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Bilbao'],
+  },
+  'Saudi Arabia': {
+    states: ['Riyadh', 'Jeddah', 'Mecca', 'Dammam', 'Medina'],
+    cities: ['Riyadh', 'Jeddah', 'Dammam', 'Mecca', 'Medina'],
+  },
+  'UAE': {
+    states: ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman'],
+    cities: ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman'],
+  },
+  'Turkey': {
+    states: ['Istanbul', 'Ankara', 'Izmir', 'Antalya', 'Bursa'],
+    cities: ['Istanbul', 'Ankara', 'Izmir', 'Antalya', 'Bursa'],
+  },
+  'Brazil': {
+    states: ['São Paulo', 'Rio de Janeiro', 'Minas Gerais', 'Paraná', 'Bahia'],
+    cities: ['São Paulo', 'Rio de Janeiro', 'Brasília', 'Curitiba', 'Salvador'],
+  },
+  'Mexico': {
+    states: ['Mexico City', 'Jalisco', 'Nuevo León', 'Guadalajara', 'Querétaro'],
+    cities: ['Mexico City', 'Guadalajara', 'Monterrey', 'Puebla', 'Tijuana'],
+  },
+  'Argentina': {
+    states: ['Buenos Aires', 'Córdoba', 'Rosario', 'Mendoza'],
+    cities: ['Buenos Aires', 'Córdoba', 'Rosario', 'Mendoza'],
+  },
+  'Chile': {
+    states: ['Santiago', 'Valparaíso', 'Biobío', 'Antofagasta'],
+    cities: ['Santiago', 'Valparaíso', 'Concepción', 'Antofagasta'],
+  },
+  'Colombia': {
+    states: ['Bogotá', 'Medellín', 'Cali', 'Barranquilla'],
+    cities: ['Bogotá', 'Medellín', 'Cali', 'Barranquilla'],
+  },
+  'Peru': {
+    states: ['Lima', 'Arequipa', 'Trujillo', 'Chiclayo'],
+    cities: ['Lima', 'Arequipa', 'Trujillo', 'Chiclayo'],
+  },
+  'Vietnam': {
+    states: ['Hanoi', 'Ho Chi Minh City', 'Da Nang', 'Hai Phong'],
+    cities: ['Hanoi', 'Ho Chi Minh City', 'Da Nang', 'Hai Phong'],
+  },
+  'Thailand': {
+    states: ['Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya'],
+    cities: ['Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya'],
+  },
+  'Malaysia': {
+    states: ['Kuala Lumpur', 'Selangor', 'Penang', 'Johor'],
+    cities: ['Kuala Lumpur', 'Petaling Jaya', 'George Town', 'Johor Bahru'],
+  },
+  'Indonesia': {
+    states: ['Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Bali'],
+    cities: ['Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Denpasar'],
+  },
+  'Philippines': {
+    states: ['Metro Manila', 'Cebu', 'Davao', 'Quezon City'],
+    cities: ['Manila', 'Cebu', 'Davao', 'Quezon City'],
+  },
+  'India': {
+    states: ['Maharashtra', 'Delhi', 'Gujarat', 'Tamil Nadu', 'Karnataka', 'Telangana'],
+    cities: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Ahmedabad'],
+  },
+  'Pakistan': {
+    states: ['Punjab', 'Sindh', 'Karachi', 'Lahore', 'Islamabad'],
+    cities: ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad'],
+  },
+  'Egypt': {
+    states: ['Cairo', 'Alexandria', 'Giza', 'Sharm El-Sheikh'],
+    cities: ['Cairo', 'Alexandria', 'Giza', 'Sharm El-Sheikh'],
+  },
+  'South Africa': {
+    states: ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape'],
+    cities: ['Johannesburg', 'Cape Town', 'Durban', 'Pretoria'],
+  },
+  'Australia': {
+    states: ['New South Wales', 'Victoria', 'Queensland', 'Western Australia', 'South Australia'],
+    cities: ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'],
+  },
+  'Canada': {
+    states: ['Ontario', 'Quebec', 'British Columbia', 'Alberta'],
+    cities: ['Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Ottawa'],
+  },
+  'Saudi Arabia': {
+    states: ['Riyadh', 'Jeddah', 'Mecca', 'Dammam', 'Medina'],
+    cities: ['Riyadh', 'Jeddah', 'Dammam', 'Mecca', 'Medina'],
+  },
+  'Japan': {
+    states: ['Tokyo', 'Osaka', 'Kyoto', 'Aichi', 'Fukuoka'],
+    cities: ['Tokyo', 'Osaka', 'Kyoto', 'Nagoya', 'Fukuoka'],
+  },
+  'South Korea': {
+    states: ['Seoul', 'Busan', 'Incheon', 'Daegu'],
+    cities: ['Seoul', 'Busan', 'Incheon', 'Daegu'],
+  },
+  'Singapore': {
+    states: [''],
+    cities: ['Singapore'],
+  },
+};
 
 const KEYWORD_OPTIONS = [
   'toy store', 'toy distributor', 'toy wholesaler', 'toy importer',
   'toy supplier', 'toy manufacturer', 'toy trading company',
-  'bubble toys', 'bubble machine', 'bubble gun',
-  'RC toys', 'RC car', 'remote control toys',
+  'bubble toys', 'bubble machine', 'bubble gun', 'bubble solution',
+  'RC toys', 'RC car', 'remote control toys', 'drone toys',
   'building blocks', 'plastic building blocks', 'educational blocks',
-  'beach toys', 'sand toys', 'outdoor toys',
+  'beach toys', 'sand toys', 'outdoor toys', 'garden toys',
   'plastic toys', 'educational toys', 'kids toys', 'baby toys',
-  'gift shop', 'party supplies', 'novelty toys',
+  'gift shop', 'party supplies', 'novelty toys', 'favor shop',
   'toy wholesale', 'toy import', 'toy export',
-  'kids store', 'children store', 'baby store',
-  'game store', 'hobby shop', 'stationery store',
+  'kids store', 'children store', 'baby store', 'toddler toys',
+  'game store', 'hobby shop', 'stationery store', 'bookstore',
+  'dollar store', 'discount store', 'variety store', '99 cent store',
+  'supermarket toys', 'hypermarket', 'department store',
+  'plush toys', 'stuffed animals', 'soft toys',
+  'puzzle toys', 'board games', 'card games',
+  'water toys', 'pool toys', 'inflatable toys',
+  'slime toys', 'squishy toys', 'fidget toys', 'pop it',
+  'dinosaur toys', 'vehicle toys', 'car toys', 'truck toys',
+  'dolls', 'action figures', 'toy figures',
+  'art supplies', 'craft kits', 'diy toys',
+  'musical toys', 'instrument toys',
+  'outdoor play equipment', 'swing sets', 'playground equipment',
+  'promotional toys', 'corporate gifts', 'custom toys',
 ];
 
 export default function MapsScraperPage() {
@@ -438,13 +582,18 @@ export default function MapsScraperPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">国家 *</Label>
-              <Select value={country} onValueChange={setCountry} disabled={isRunning}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {COUNTRY_OPTIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs text-muted-foreground">国家 <span className="text-red-500">*</span></Label>
+              <Input
+                value={country}
+                onChange={(e) => { setCountry(e.target.value); setState(''); setCity(''); }}
+                list="country-options"
+                placeholder="输入或选择国家"
+                className="h-9"
+                disabled={isRunning}
+              />
+              <datalist id="country-options">
+                {COUNTRY_OPTIONS.map((c) => <option key={c} value={c} />)}
+              </datalist>
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">省份/州</Label>
@@ -455,7 +604,7 @@ export default function MapsScraperPage() {
               <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="全部" className="h-9" disabled={isRunning} />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">关键词 *</Label>
+              <Label className="text-xs text-muted-foreground">关键词 <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Input
                   value={keyword}
@@ -486,6 +635,48 @@ export default function MapsScraperPage() {
               </Select>
             </div>
           </div>
+
+          {/* Recommended states/cities for selected country */}
+          {COUNTRY_REGION_MAP[country] && (
+            <div className="flex flex-wrap gap-x-6 gap-y-2 rounded-lg border border-blue-100 bg-blue-50/40 p-3">
+              {COUNTRY_REGION_MAP[country].states.length > 0 && (
+                <div className="flex items-start gap-2 flex-wrap">
+                  <span className="text-xs text-muted-foreground mt-0.5 shrink-0">推荐州/省:</span>
+                  {COUNTRY_REGION_MAP[country].states.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setState(s)}
+                      disabled={isRunning}
+                      className={`px-2 py-0.5 rounded text-xs border transition-colors ${
+                        state === s
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-blue-700 border-blue-200 hover:border-blue-400'
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-start gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground mt-0.5 shrink-0">推荐城市:</span>
+                {COUNTRY_REGION_MAP[country].cities.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCity(c)}
+                    disabled={isRunning}
+                    className={`px-2 py-0.5 rounded text-xs border transition-colors ${
+                      city === c
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-blue-700 border-blue-200 hover:border-blue-400'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center gap-2 flex-wrap pt-1">
             <Button onClick={handleStart} disabled={starting || isRunning} className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-sm">
