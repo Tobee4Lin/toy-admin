@@ -165,7 +165,6 @@ export class CustomerService {
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Sort by priority (A > B > C > D), then by created_at desc.
-    // Also left-join the latest followup content for each customer.
     const priorityOrder = sql`CASE ${schema.customer.priority}
       WHEN 'A' THEN 1
       WHEN 'B' THEN 2
@@ -174,21 +173,13 @@ export class CustomerService {
     END`;
 
     let rows = this.db
-      .select({
-        ...schema.customer,
-        latestFollowupContent: sql<string | null>`(
-          SELECT content FROM customer_followup
-          WHERE customer_followup.customer_id = ${schema.customer.id}
-          ORDER BY follow_date DESC
-          LIMIT 1
-        )`,
-      })
+      .select()
       .from(schema.customer)
       .where(where)
       .orderBy(priorityOrder, desc(schema.customer.createdAt))
       .limit(pageSize)
       .offset(offset)
-      .all() as (typeof schema.customer.$inferSelect & { latestFollowupContent: string | null })[];
+      .all();
 
     // Filter by contact status in memory (simpler)
     if (params.contactStatus && params.contactStatus !== 'all') {
@@ -212,8 +203,27 @@ export class CustomerService {
       .where(where)
       .get();
 
+    // Batch-fetch latest followup content for each customer on this page
+    const customerIds = rows.map((r) => r.id);
+    const latestMap = new Map<number, string>();
+    if (customerIds.length > 0) {
+      const followupRows = this.db.all(sql`
+        SELECT f.customer_id, f.content
+        FROM customer_followup f
+        INNER JOIN (
+          SELECT customer_id, MAX(follow_date) AS max_date
+          FROM customer_followup
+          WHERE customer_id IN (${sql.join(customerIds.map((id) => sql`${id}`), sql`, `)})
+          GROUP BY customer_id
+        ) latest ON f.customer_id = latest.customer_id AND f.follow_date = latest.max_date
+      `) as { customer_id: number; content: string | null }[];
+      for (const fr of followupRows) {
+        if (fr.content) latestMap.set(fr.customer_id, fr.content);
+      }
+    }
+
     return {
-      items: rows.map((row) => ({ ...toCustomer(row), latestFollowupContent: row.latestFollowupContent || '' })),
+      items: rows.map((row) => ({ ...toCustomer(row), latestFollowupContent: latestMap.get(row.id) || '' })),
       total: countResult?.count ?? 0,
       page,
       pageSize,
