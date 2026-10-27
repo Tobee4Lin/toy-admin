@@ -35,6 +35,7 @@ export interface Customer {
   brandUsed?: string;
   businessDetail?: string;
   lastFollowUpAt?: string;
+  latestFollowupContent?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -163,14 +164,31 @@ export class CustomerService {
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
+    // Sort by priority (A > B > C > D), then by created_at desc.
+    // Also left-join the latest followup content for each customer.
+    const priorityOrder = sql`CASE ${schema.customer.priority}
+      WHEN 'A' THEN 1
+      WHEN 'B' THEN 2
+      WHEN 'C' THEN 3
+      ELSE 4
+    END`;
+
     let rows = this.db
-      .select()
+      .select({
+        ...schema.customer,
+        latestFollowupContent: sql<string | null>`(
+          SELECT content FROM customer_followup
+          WHERE customer_followup.customer_id = ${schema.customer.id}
+          ORDER BY follow_date DESC
+          LIMIT 1
+        )`,
+      })
       .from(schema.customer)
       .where(where)
-      .orderBy(desc(schema.customer.createdAt))
+      .orderBy(priorityOrder, desc(schema.customer.createdAt))
       .limit(pageSize)
       .offset(offset)
-      .all();
+      .all() as (typeof schema.customer.$inferSelect & { latestFollowupContent: string | null })[];
 
     // Filter by contact status in memory (simpler)
     if (params.contactStatus && params.contactStatus !== 'all') {
@@ -195,7 +213,7 @@ export class CustomerService {
       .get();
 
     return {
-      items: rows.map((row) => toCustomer(row)),
+      items: rows.map((row) => ({ ...toCustomer(row), latestFollowupContent: row.latestFollowupContent || '' })),
       total: countResult?.count ?? 0,
       page,
       pageSize,

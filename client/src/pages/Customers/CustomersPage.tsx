@@ -284,7 +284,7 @@ function EditCustomerDialog({
             <TabsContent value="basic" className="mt-0">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                 <div className="col-span-2">
-                  <Label className="text-sm">公司名称 *</Label>
+                  <Label className="text-sm">公司名称 <span className="text-red-500">*</span></Label>
                   <Input value={form.company || ''} onChange={(e) => updateField('company', e.target.value)} className="mt-1" />
                 </div>
                 <div>
@@ -300,18 +300,6 @@ function EditCustomerDialog({
                   <Input value={form.city || ''} onChange={(e) => updateField('city', e.target.value)} className="mt-1" />
                 </div>
                 <div>
-                  <Label className="text-sm">企业背景</Label>
-                  <Select value={form.background || ''} onValueChange={(v) => updateField('background', v)}>
-                    <SelectTrigger className="mt-1"><SelectValue placeholder="选择背景" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="国企">国企</SelectItem>
-                      <SelectItem value="外企">外企</SelectItem>
-                      <SelectItem value="民营">民营</SelectItem>
-                      <SelectItem value="个体">个体</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
                   <Label className="text-sm">企业规模</Label>
                   <Select value={form.scale || ''} onValueChange={(v) => updateField('scale', v)}>
                     <SelectTrigger className="mt-1"><SelectValue placeholder="选择规模" /></SelectTrigger>
@@ -321,14 +309,6 @@ function EditCustomerDialog({
                       <SelectItem value="小型">小型</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <Label className="text-sm">员工人数</Label>
-                  <Input value={form.employeeCount || ''} onChange={(e) => updateField('employeeCount', e.target.value)} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-sm">成立年份</Label>
-                  <Input value={form.foundedYear || ''} onChange={(e) => updateField('foundedYear', e.target.value)} className="mt-1" />
                 </div>
                 <div>
                   <Label className="text-sm">客户来源</Label>
@@ -370,10 +350,6 @@ function EditCustomerDialog({
                       <SelectItem value="D">D 暂无意向</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <Label className="text-sm">使用品牌</Label>
-                  <Input value={form.brandUsed || ''} onChange={(e) => updateField('brandUsed', e.target.value)} className="mt-1" />
                 </div>
               </div>
             </TabsContent>
@@ -786,6 +762,7 @@ export default function CustomersPage() {
               <TableHead>国家/地区</TableHead>
               <TableHead className="w-32">联系方式</TableHead>
               <TableHead className="w-24">优先级</TableHead>
+              <TableHead>最新动态</TableHead>
               <TableHead className="w-24">来源</TableHead>
               <TableHead className="w-28">最近跟进</TableHead>
               <TableHead className="w-32 text-right pr-4">操作</TableHead>
@@ -793,9 +770,9 @@ export default function CustomersPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={9} className="py-12 text-center text-muted-foreground">加载中...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="py-12 text-center text-muted-foreground">加载中...</TableCell></TableRow>
             ) : customers.length === 0 ? (
-              <TableRow><TableCell colSpan={9} className="py-12 text-center text-muted-foreground">暂无客户数据</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="py-12 text-center text-muted-foreground">暂无客户数据</TableCell></TableRow>
             ) : (
               customers.map((c) => (
                 <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleEdit(c)}>
@@ -832,6 +809,11 @@ export default function CustomersPage() {
                   </TableCell>
                   <TableCell>
                     <Badge className={PRIORITY_COLORS[c.priority || 'C']}>{PRIORITY_LABELS[c.priority || 'C']}</Badge>
+                  </TableCell>
+                  <TableCell className="max-w-[260px]">
+                    <div className="text-xs text-gray-700 line-clamp-2" title={c.latestFollowupContent || c.businessDetail || ''}>
+                      {c.latestFollowupContent || c.businessDetail || <span className="text-muted-foreground">-</span>}
+                    </div>
                   </TableCell>
                   <TableCell className="text-xs">{SOURCE_LABELS[c.source || ''] || c.source || '-'}</TableCell>
                   <TableCell className="text-xs">

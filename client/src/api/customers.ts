@@ -25,6 +25,7 @@ export interface Customer {
   brandUsed?: string;
   businessDetail?: string;
   lastFollowUpAt?: string;
+  latestFollowupContent?: string;
   createdAt: string;
   updatedAt: string;
 }
