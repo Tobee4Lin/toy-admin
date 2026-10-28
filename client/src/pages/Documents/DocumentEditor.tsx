@@ -144,6 +144,7 @@ export default function DocumentEditor() {
   const [productPage, setProductPage] = useState(1);
   const [productTotal, setProductTotal] = useState(0);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
 
   // Load existing document
   useEffect(() => {
@@ -263,8 +264,52 @@ export default function DocumentEditor() {
   const openProductPicker = () => {
     setProductSearch('');
     setProductPage(1);
+    setSelectedProducts([]);
     loadProducts(1, '');
     setShowProductPicker(true);
+  };
+
+  const toggleSelectProduct = (product: Product) => {
+    setSelectedProducts((prev) => {
+      const exists = prev.find((p) => p.id === product.id);
+      if (exists) return prev.filter((p) => p.id !== product.id);
+      return [...prev, product];
+    });
+  };
+
+  const buildItemFromProduct = (product: Product): DocumentItem => ({
+    id: Date.now().toString() + Math.random().toString(36).slice(2, 10),
+    image: product.imageUrl || '',
+    description: `${product.name} (${product.itemNumber})`,
+    specs: product.specifications ? Object.entries(product.specifications).map(([k, v]) => `${k}: ${v}`).join(', ') : '',
+    moq: product.moq || 0,
+    quantity: product.moq || 100,
+    unitPrice: 0,
+    discount: 0,
+    cartons: 0,
+    ctnSize: '',
+    grossWeight: 0,
+    netWeight: 0,
+    cbm: 0,
+    cbmPerUnit: 0,
+    totalCbm: 0,
+    remark: '',
+  });
+
+  const confirmAddSelected = () => {
+    if (selectedProducts.length === 0) return;
+    const newItems = selectedProducts.map(buildItemFromProduct);
+    setItems((prev) => {
+      let next = [...prev];
+      for (const item of newItems) {
+        const emptyIdx = next.findIndex((i) => !i.description.trim());
+        if (emptyIdx >= 0) next[emptyIdx] = item;
+        else next.push(item);
+      }
+      return next;
+    });
+    setShowProductPicker(false);
+    toast.success(`已添加 ${selectedProducts.length} 个产品`);
   };
 
   const selectProduct = (product: Product) => {
@@ -897,11 +942,16 @@ export default function DocumentEditor() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {productList.map((product) => (
-                  <div
-                    key={product.id}
-                    className="text-left rounded-lg border p-3 hover:border-[#1F4E78] hover:shadow-md transition-all"
-                  >
-                    <div className="aspect-square rounded bg-muted mb-2 overflow-hidden">
+              <div
+                key={product.id}
+                onClick={() => toggleSelectProduct(product)}
+                className={`text-left rounded-lg border p-3 transition-all cursor-pointer ${
+                  selectedProducts.find((p) => p.id === product.id)
+                    ? 'border-[#1F4E78] bg-blue-50 ring-2 ring-[#1F4E78]/30'
+                    : 'hover:border-[#1F4E78] hover:shadow-md'
+                }`}
+              >
+                    <div className="aspect-square rounded bg-muted mb-2 overflow-hidden relative">
                       {product.imageUrl ? (
                         <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                       ) : (
@@ -909,17 +959,16 @@ export default function DocumentEditor() {
                           <Package className="size-8" />
                         </div>
                       )}
+                      {selectedProducts.find((p) => p.id === product.id) && (
+                        <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-[#1F4E78] text-white flex items-center justify-center text-xs">✓</div>
+                      )}
                     </div>
                     <div className="text-sm font-medium line-clamp-2">{product.name}</div>
                     <div className="text-xs text-muted-foreground mt-1">货号: {product.itemNumber}</div>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs text-muted-foreground">MOQ: {product.moq}</span>
-                      <Button size="sm" className="h-7 px-3 text-xs bg-[#1F4E78] hover:bg-[#1a3a5c]" onClick={() => selectProduct(product)}>
-                        选择
-                      </Button>
                     </div>
-                  </div>
-                ))}
+                  </div>}
               </div>
             )}
           </div>
@@ -946,6 +995,18 @@ export default function DocumentEditor() {
               </div>
             </div>
           )}
+          {/* Footer with multi-select confirm */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <span className="text-xs text-muted-foreground">
+              {selectedProducts.length > 0 ? `已选 ${selectedProducts.length} 个产品` : '点击产品卡片进行多选'}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowProductPicker(false)}>取消</Button>
+              <Button size="sm" className="bg-[#1F4E78] hover:bg-[#1a3a5c]" disabled={selectedProducts.length === 0} onClick={confirmAddSelected}>
+                添加选中 ({selectedProducts.length})
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

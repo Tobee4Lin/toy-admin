@@ -68,16 +68,17 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
   const totalVolume = items.reduce((sum, item) => sum + (item.totalCbm || item.cbm || 0), 0);
   const deposit = totalAmount * 0.3;
   const balance = totalAmount * 0.7;
-  const amountInWords = `SAY ${isRMB ? 'RENMINBI' : 'US DOLLAR'} ${numberToWords(totalAmount)} ONLY.`;
-
-  const isPL = type === 'pl';
-  const isCI = type === 'ci';
-  const showAmount = type === 'pi' || type === 'ci';
 
   // Currency display helpers
   const isRMB = currency === 'RMB';
   const currencySymbol = isRMB ? '¥' : '$';
   const currencyLabel = isRMB ? 'RMB' : 'USD';
+
+  const amountInWords = `SAY ${isRMB ? 'RENMINBI' : 'US DOLLAR'} ${numberToWords(totalAmount)} ONLY.`;
+
+  const isPL = type === 'pl';
+  const isCI = type === 'ci';
+  const showAmount = type === 'pi' || type === 'ci';
 
   // Extract only the "Spec:" value from the specs string (drop Material, Package, etc.)
   const extractSpec = (raw?: string): string => {
