@@ -188,12 +188,12 @@ export default function DocumentEditor() {
     load();
   }, [id]);
 
-  // Auto-generate document number for new docs: LVC + YYYYMMDD + 3 random digits
+  // Auto-generate document number for new docs: LVC + YYYYMMDD + 4 random digits
   useEffect(() => {
     if (!id && !documentNo) {
       const now = new Date();
       const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-      const rand = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+      const rand = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
       setDocumentNo(`LVC${ymd}${rand}`);
     }
   }, [id, documentNo]);
@@ -377,7 +377,7 @@ export default function DocumentEditor() {
         }, 0).toFixed(2);
     return {
       type,
-      documentNo: documentNo || `LVC${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
+      documentNo: documentNo || `LVC${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
       date,
       validity,
       currency,
