@@ -68,11 +68,23 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
   const totalVolume = items.reduce((sum, item) => sum + (item.totalCbm || item.cbm || 0), 0);
   const deposit = totalAmount * 0.3;
   const balance = totalAmount * 0.7;
-  const amountInWords = `SAY US DOLLAR ${numberToWords(totalAmount)} ONLY.`;
+  const amountInWords = `SAY ${isRMB ? 'RENMINBI' : 'US DOLLAR'} ${numberToWords(totalAmount)} ONLY.`;
 
   const isPL = type === 'pl';
   const isCI = type === 'ci';
   const showAmount = type === 'pi' || type === 'ci';
+
+  // Currency display helpers
+  const isRMB = currency === 'RMB';
+  const currencySymbol = isRMB ? '¥' : '$';
+  const currencyLabel = isRMB ? 'RMB' : 'USD';
+
+  // Extract only the "Spec:" value from the specs string (drop Material, Package, etc.)
+  const extractSpec = (raw?: string): string => {
+    if (!raw) return '-';
+    const m = raw.match(/Spec:\s*([^,]+)/i);
+    return m ? m[1].trim() : raw;
+  };
 
   return (
     <div className="document-preview bg-white text-[#1a1a1a]" style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -143,9 +155,9 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                 <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '45px' }}>Qty<br/><span className="text-[10px] opacity-80">(CTN)</span></th>
                 <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '75px' }}>CBM<br/><span className="text-[10px] opacity-80">(m³/CTN)</span></th>
                 <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '70px' }}>Total CBM<br/><span className="text-[10px] opacity-80">(m³)</span></th>
-                <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '70px' }}>Price<br/><span className="text-[10px] opacity-80">(USD/CTN)</span></th>
+                <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '70px' }}>Price<br/><span className="text-[10px] opacity-80">({currencyLabel}/CTN)</span></th>
                 {showAmount && (
-                  <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '85px' }}>Amount<br/><span className="text-[10px] opacity-80">(USD)</span></th>
+                  <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '85px' }}>Amount<br/><span className="text-[10px] opacity-80">({currencyLabel})</span></th>
                 )}
                 <th className="border border-gray-400 px-1 py-2 text-left" style={{ width: '50px', minWidth: '50px' }}>Remark</th>
               </>
@@ -182,13 +194,13 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                       )}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">{item.description}</td>
-                    <td className="border border-gray-400 px-2 py-1 text-center">{item.specs || '-'}</td>
+                    <td className="border border-gray-400 px-2 py-1 text-center">{extractSpec(item.specs)}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.quantity || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.cbmPerUnit || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.totalCbm || '-'}</td>
-                    <td className="border border-gray-400 px-2 py-1 text-center" style={{ whiteSpace: 'nowrap' }}>${item.unitPrice?.toFixed(2)}</td>
+                    <td className="border border-gray-400 px-2 py-1 text-center" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{item.unitPrice?.toFixed(2)}</td>
                     {showAmount && (
-                      <td className="border border-gray-400 px-2 py-1 text-right font-semibold" style={{ whiteSpace: 'nowrap' }}>${((Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)).toFixed(2)}</td>
+                      <td className="border border-gray-400 px-2 py-1 text-right font-semibold" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{((Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)).toFixed(2)}</td>
                     )}
                     <td className="border border-gray-400 px-1 py-1 text-xs">{item.remark || '-'}</td>
                   </>
@@ -248,7 +260,7 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
           </div>
           <div className="flex justify-between items-center py-1.5 border-t-2 border-[#1F4E78]">
             <span className="text-base font-bold text-[#1F4E78]">Grand Total:</span>
-            <span className="text-lg font-bold text-[#1F4E78]" style={{ whiteSpace: 'nowrap' }}>${totalAmount.toFixed(2)}</span>
+            <span className="text-lg font-bold text-[#1F4E78]" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{totalAmount.toFixed(2)}</span>
           </div>
         </div>
       )}
@@ -263,11 +275,11 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="px-3 py-2 bg-[#f0f4f8] border border-[#1a3a5c]/20 rounded-sm">
               <span className="font-semibold text-[#1a3a5c]">Deposit (30%):</span>{' '}
-              <span className="float-right font-bold" style={{ whiteSpace: 'nowrap' }}>${deposit.toFixed(2)}</span>
+              <span className="float-right font-bold" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{deposit.toFixed(2)}</span>
             </div>
             <div className="px-3 py-2 bg-[#f0f4f8] border border-[#1a3a5c]/20 rounded-sm">
               <span className="font-semibold text-[#1a3a5c]">Balance (70%):</span>{' '}
-              <span className="float-right font-bold" style={{ whiteSpace: 'nowrap' }}>${balance.toFixed(2)}</span>
+              <span className="float-right font-bold" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{balance.toFixed(2)}</span>
             </div>
           </div>
         </div>
