@@ -659,7 +659,7 @@ export default function DocumentEditor() {
                     {!isPL ? (
                       <>
                         <div className="space-y-1">
-                          <Label className="text-xs">Qty</Label>
+                          <Label className="text-xs">Qty (CTN)</Label>
                           <Input type="number" value={item.quantity} onChange={(e) => {
                             const qty = Number(e.target.value);
                             updateItem(item.id, 'quantity', qty);

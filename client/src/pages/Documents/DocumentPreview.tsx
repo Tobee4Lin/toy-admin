@@ -195,7 +195,7 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                     </td>
                     <td className="border border-gray-400 px-2 py-1">{item.description}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{extractSpec(item.specs)}</td>
-                    <td className="border border-gray-400 px-2 py-1 text-center">{item.quantity || '-'}</td>
+                    <td className="border border-gray-400 px-2 py-1 text-center">{item.quantity ? `${item.quantity} CTN` : '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.cbmPerUnit || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.totalCbm || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{item.unitPrice?.toFixed(2)}</td>
