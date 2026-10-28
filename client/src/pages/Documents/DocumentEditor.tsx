@@ -968,7 +968,8 @@ export default function DocumentEditor() {
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs text-muted-foreground">MOQ: {product.moq}</span>
                     </div>
-                  </div>}
+                  </div>
+                ))}
               </div>
             )}
           </div>
