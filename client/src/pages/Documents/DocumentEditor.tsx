@@ -969,7 +969,7 @@ export default function DocumentEditor() {
       {/* Print styles */}
       <style>{`
         @media print {
-          @page { margin: 10mm; size: A4; background: white; }
+          @page { margin: 10mm; size: A4 landscape; background: white; }
           html, body { overflow: visible !important; height: auto !important; background: white !important; }
           body { background: white !important; }
           .no-print { display: none !important; }
