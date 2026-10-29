@@ -980,6 +980,7 @@ export default function DocumentEditor() {
           .print-area table { table-layout: auto !important; width: 100% !important; font-size: 9px !important; }
           .print-area img { object-fit: contain !important; max-height: 50px !important; width: auto !important; }
           .print-area thead tr { background-color: #1F4E78 !important; }
+          .print-area thead { display: table-row-group !important; }
           .print-area thead th { padding: 3px 4px !important; font-size: 8px !important; }
           .print-area tbody td { padding: 2px 4px !important; }
           .print-area tbody tr:nth-child(even) { background-color: #f9fafb !important; }
