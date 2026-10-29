@@ -89,13 +89,6 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
 
   return (
     <div className="document-preview bg-white text-[#1a1a1a]" style={{ fontFamily: 'Arial, sans-serif' }}>
-      <style>{`
-        @media print {
-          @page { size: A4 landscape; margin: 10mm; }
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .document-preview { width: 100% !important; }
-        }
-      `}</style>
       {/* Header */}
       <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-[#1a3a5c]">
         <div className="flex items-start gap-3">

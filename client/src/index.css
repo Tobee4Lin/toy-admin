@@ -52,3 +52,18 @@
 .rich-text-editor strong {
   font-weight: 700;
 }
+
+/* Document print - landscape */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .document-preview {
+    width: 100% !important;
+  }
+}
