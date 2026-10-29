@@ -969,19 +969,39 @@ export default function DocumentEditor() {
       {/* Print styles */}
       <style>{`
         @media print {
-          @page { margin: 10mm; size: A4 landscape; background: white; }
+          @page { margin: 8mm; size: A4 landscape; background: white; }
           html, body { overflow: visible !important; height: auto !important; background: white !important; }
           body { background: white !important; }
           .no-print { display: none !important; }
           .print-area { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; background: white !important; }
           .print-area .sticky { position: static !important; box-shadow: none !important; border: none !important; padding: 0 !important; background: white !important; }
           .print-area > div > div:last-child { max-height: none !important; overflow: visible !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; background: white !important; }
-          .print-area .document-preview { padding: 0 !important; max-width: 100% !important; background: white !important; }
-          .print-area table { table-layout: auto !important; width: 100% !important; }
-          .print-area img { object-fit: contain !important; }
+          .print-area .document-preview { padding: 0 !important; max-width: 100% !important; background: white !important; font-size: 9px !important; }
+          .print-area table { table-layout: auto !important; width: 100% !important; font-size: 9px !important; }
+          .print-area img { object-fit: contain !important; max-height: 50px !important; width: auto !important; }
           .print-area thead tr { background-color: #1F4E78 !important; }
+          .print-area thead th { padding: 3px 4px !important; font-size: 8px !important; }
+          .print-area tbody td { padding: 2px 4px !important; }
           .print-area tbody tr:nth-child(even) { background-color: #f9fafb !important; }
           .print-area tfoot tr { background-color: transparent !important; }
+          .print-area h1 { font-size: 14px !important; margin: 0 !important; }
+          .print-area h2 { font-size: 16px !important; margin: 0 !important; }
+          .print-area h3 { font-size: 10px !important; margin: 4px 0 2px !important; }
+          .print-area h4 { font-size: 9px !important; margin: 4px 0 2px !important; }
+          .print-area p, .print-area div { font-size: 9px !important; line-height: 1.3 !important; margin: 0 !important; }
+          .print-area .mb-6 { margin-bottom: 6px !important; }
+          .print-area .mb-4 { margin-bottom: 4px !important; }
+          .print-area .mb-2 { margin-bottom: 2px !important; }
+          .print-area .mt-6 { margin-top: 6px !important; }
+          .print-area .mt-4 { margin-top: 4px !important; }
+          .print-area .mt-2 { margin-top: 2px !important; }
+          .print-area .mt-10 { margin-top: 10px !important; }
+          .print-area .border-b-2 { border-bottom-width: 1px !important; }
+          .print-area .pb-4 { padding-bottom: 4px !important; }
+          .print-area .flex.justify-between.items-start.gap-3 img { width: 40px !important; height: 40px !important; }
+          .print-area [class*="bg-[#f0f4f8]"] { padding: 4px !important; margin-bottom: 4px !important; }
+          .print-area ul { margin: 0 !important; padding-left: 16px !important; }
+          .print-area li { margin: 0 !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
       `}</style>
