@@ -196,9 +196,9 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                   <>
                     <td className="border border-gray-400 px-1 py-2 text-center align-middle">
                       {item.image ? (
-                        <img src={item.image} alt="" className="w-20 h-20 object-cover mx-auto rounded" />
+                        <img src={item.image} alt="" className="w-24 h-24 object-contain mx-auto" />
                       ) : (
-                        <div className="w-20 h-20 bg-gray-100 mx-auto flex items-center justify-center text-gray-300 text-[10px] rounded">No img</div>
+                        <div className="w-24 h-24 bg-gray-100 mx-auto flex items-center justify-center text-gray-300 text-[10px]">No img</div>
                       )}
                     </td>
                     <td className="border border-gray-400 px-2 py-1">{item.description}</td>
