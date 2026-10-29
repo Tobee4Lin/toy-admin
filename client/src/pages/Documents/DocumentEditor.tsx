@@ -287,24 +287,47 @@ export default function DocumentEditor() {
     });
   };
 
-  const buildItemFromProduct = (product: Product): DocumentItem => ({
-    id: Date.now().toString() + Math.random().toString(36).slice(2, 10),
-    image: product.imageUrl || '',
-    description: `${product.name} (${product.itemNumber})`,
-    specs: product.specifications ? Object.entries(product.specifications).map(([k, v]) => `${k}: ${v}`).join(', ') : '',
-    moq: product.moq || 0,
-    quantity: product.moq || 100,
-    unitPrice: 0,
-    discount: 0,
-    cartons: 0,
-    ctnSize: '',
-    grossWeight: 0,
-    netWeight: 0,
-    cbm: 0,
-    cbmPerUnit: 0,
-    totalCbm: 0,
-    remark: '',
-  });
+  // Parse pieces-per-carton from a Spec string like "35ml*24pcs*18boxes" or "8boxes" or "60pcs"
+  const parsePcsPerCtn = (specStr: string): number => {
+    if (!specStr) return 0;
+    // Extract the Spec value
+    const m = specStr.match(/Spec:\s*([^,]+)/i);
+    const specVal = m ? m[1] : specStr;
+    // Find all numbers followed by pcs/boxes/bags
+    const nums = specVal.match(/(\d+)\s*(pcs|boxes|bags|ctn)/gi);
+    if (!nums) return 0;
+    // Multiply all numbers found (e.g. "24pcs*18boxes" → 24*18=432)
+    const values = nums.map((n) => parseInt(n.match(/\d+/)?.[0] || '0', 10));
+    return values.reduce((a, b) => a * b, 1);
+  };
+
+  const buildItemFromProduct = (product: Product): DocumentItem => {
+    const specsStr = product.specifications
+      ? Object.entries(product.specifications).map(([k, v]) => `${k}: ${v}`).join(', ')
+      : '';
+    const pcsPerCtn = parsePcsPerCtn(specsStr);
+    const moq = product.moq || 0;
+    // Convert pcs MOQ to cartons
+    const cartons = pcsPerCtn > 0 ? Math.round(moq / pcsPerCtn) : 0;
+    return {
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 10),
+      image: product.imageUrl || '',
+      description: `${product.name} (${product.itemNumber})`,
+      specs: specsStr,
+      moq,
+      quantity: cartons || moq, // cartons
+      unitPrice: 0,
+      discount: 0,
+      cartons: 0,
+      ctnSize: '',
+      grossWeight: 0,
+      netWeight: 0,
+      cbm: 0,
+      cbmPerUnit: 0,
+      totalCbm: 0,
+      remark: '',
+    };
+  };
 
   const confirmAddSelected = () => {
     if (selectedProducts.length === 0) return;
@@ -814,7 +837,45 @@ export default function DocumentEditor() {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">其他条款</Label>
-                <Textarea value={terms.other} onChange={(e) => setTerms({ ...terms, other: e.target.value })} rows={2} />
+                {(terms.other ? terms.other.split('\n') : ['']).map((line, idx, arr) => (
+                  <div key={idx} className="flex gap-1">
+                    <Input
+                      value={line}
+                      onChange={(e) => {
+                        const lines = terms.other ? terms.other.split('\n') : [''];
+                        lines[idx] = e.target.value;
+                        setTerms({ ...terms, other: lines.join('\n') });
+                      }}
+                      placeholder={`条款 ${idx + 1}`}
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 w-9 px-0 text-red-500"
+                      onClick={() => {
+                        const lines = terms.other ? terms.other.split('\n') : [''];
+                        lines.splice(idx, 1);
+                        if (lines.length === 0) lines.push('');
+                        setTerms({ ...terms, other: lines.join('\n') });
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-1"
+                  onClick={() => {
+                    const lines = terms.other ? terms.other.split('\n') : [];
+                    lines.push('');
+                    setTerms({ ...terms, other: lines.join('\n') });
+                  }}
+                >
+                  + 添加条款
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -89,6 +89,13 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
 
   return (
     <div className="document-preview bg-white text-[#1a1a1a]" style={{ fontFamily: 'Arial, sans-serif' }}>
+      <style>{`
+        @media print {
+          @page { size: A4 landscape; margin: 10mm; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .document-preview { width: 100% !important; }
+        }
+      `}</style>
       {/* Header */}
       <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-[#1a3a5c]">
         <div className="flex items-start gap-3">
@@ -196,7 +203,7 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                     </td>
                     <td className="border border-gray-400 px-2 py-1">{item.description}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{extractSpec(item.specs)}</td>
-                    <td className="border border-gray-400 px-2 py-1 text-center">{item.quantity ? `${item.quantity} CTN` : '-'}</td>
+                    <td className="border border-gray-400 px-2 py-1 text-center">{item.quantity || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.cbmPerUnit || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center">{item.totalCbm || '-'}</td>
                     <td className="border border-gray-400 px-2 py-1 text-center" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{item.unitPrice?.toFixed(2)}</td>
