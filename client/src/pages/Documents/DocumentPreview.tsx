@@ -250,26 +250,28 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
 
       {/* Total Cartons + Grand Total (PI & CI) - standalone */}
       {showAmount && items.length > 0 && (
-        <div className="mt-2 mb-4 ml-auto" style={{ width: '45%' }}>
-          <div className="flex justify-between items-center py-1 text-xs">
-            <span className="font-semibold text-gray-600">Total Cartons:</span>
-            <span className="font-semibold">{totalQty.toLocaleString()} CTN</span>
-          </div>
-          <div className="flex justify-between items-center py-1 text-xs">
-            <span className="font-semibold text-gray-600">Total Volume:</span>
-            <span className="font-semibold">{totalVolume.toFixed(3)} CBM</span>
-          </div>
-          <div className="flex justify-between items-center py-1.5 border-t-2 border-[#1F4E78]">
-            <span className="text-base font-bold text-[#1F4E78]">Grand Total:</span>
-            <span className="text-lg font-bold text-[#1F4E78]" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{totalAmount.toFixed(2)}</span>
+        <div className="mt-2 mb-4 flex justify-end">
+          <div style={{ width: '45%' }}>
+            <div className="flex justify-between items-center py-1 text-xs">
+              <span className="font-semibold text-gray-600">Total Cartons:</span>
+              <span className="font-semibold">{totalQty.toLocaleString()} CTN</span>
+            </div>
+            <div className="flex justify-between items-center py-1 text-xs">
+              <span className="font-semibold text-gray-600">Total Volume:</span>
+              <span className="font-semibold">{totalVolume.toFixed(3)} CBM</span>
+            </div>
+            <div className="flex justify-between items-center py-1.5 border-t-2 border-[#1F4E78]">
+              <span className="text-base font-bold text-[#1F4E78]">Grand Total:</span>
+              <span className="text-lg font-bold text-[#1F4E78]" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{totalAmount.toFixed(2)}</span>
+            </div>
           </div>
         </div>
       )}
 
       {/* Grand Total for Quotation (QT) */}
       {!showAmount && !isPL && items.length > 0 && (
-        <div className="mt-2 mb-4 ml-auto" style={{ width: '45%' }}>
-          <div className="flex justify-between items-center py-1.5 border-t-2 border-[#1F4E78]">
+        <div className="mt-2 mb-4 flex justify-end">
+          <div style={{ width: '45%' }} className="flex justify-between items-center py-1.5 border-t-2 border-[#1F4E78]">
             <span className="text-base font-bold text-[#1F4E78]">Grand Total:</span>
             <span className="text-lg font-bold text-[#1F4E78]" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{totalAmount.toFixed(2)}</span>
           </div>
