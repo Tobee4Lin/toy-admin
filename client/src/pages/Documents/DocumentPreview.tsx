@@ -266,6 +266,16 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
         </div>
       )}
 
+      {/* Grand Total for Quotation (QT) */}
+      {!showAmount && !isPL && items.length > 0 && (
+        <div className="mt-2 mb-4 ml-auto" style={{ width: '45%' }}>
+          <div className="flex justify-between items-center py-1.5 border-t-2 border-[#1F4E78]">
+            <span className="text-base font-bold text-[#1F4E78]">Grand Total:</span>
+            <span className="text-lg font-bold text-[#1F4E78]" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{totalAmount.toFixed(2)}</span>
+          </div>
+        </div>
+      )}
+
       {/* Amount in Words + Deposit/Balance (PI & CI) */}
       {showAmount && items.length > 0 && (
         <div className="mt-2 text-xs">
