@@ -500,7 +500,12 @@ export class ProductService {
       // 主图：显式指定则更新；若仍无主图，用画廊第一张补齐
       let nextImageUrl = product.imageUrl ?? '';
       if (incomingMain) {
-        nextImageUrl = incomingMain;
+        if (mode === 'append' && product.imageUrl) {
+          // 追加模式：产品已有主图，新上传的"主图"改放到画廊，不覆盖
+          if (!nextGallery.includes(incomingMain)) nextGallery.push(incomingMain);
+        } else {
+          nextImageUrl = incomingMain;
+        }
       } else if (!nextImageUrl && nextGallery.length > 0) {
         nextImageUrl = nextGallery[0];
       }
