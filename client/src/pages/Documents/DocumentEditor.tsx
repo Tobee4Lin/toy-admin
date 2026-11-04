@@ -287,44 +287,71 @@ export default function DocumentEditor() {
     });
   };
 
-  // Parse pieces-per-carton from a Spec string like "35ml*24pcs*18boxes" or "8boxes" or "60pcs"
-  const parsePcsPerCtn = (specStr: string): number => {
+  // Parse pieces-per-carton from specs object or string
+  const parsePcsPerCtn = (specs: Record<string, unknown> | undefined, specStr: string): number => {
+    // First try direct key lookup
+    if (specs) {
+      for (const [k, v] of Object.entries(specs)) {
+        if (/pcs\/carton/i.test(k)) {
+          const n = parseFloat(String(v));
+          if (!isNaN(n) && n > 0) return n;
+        }
+      }
+    }
+    // Fallback: parse from string like "60pcs" or "24pcs*18boxes"
     if (!specStr) return 0;
-    // Extract the Spec value
     const m = specStr.match(/Spec:\s*([^,]+)/i);
     const specVal = m ? m[1] : specStr;
-    // Find all numbers followed by pcs/boxes/bags
     const nums = specVal.match(/(\d+)\s*(pcs|boxes|bags|ctn)/gi);
     if (!nums) return 0;
-    // Multiply all numbers found (e.g. "24pcs*18boxes" → 24*18=432)
     const values = nums.map((n) => parseInt(n.match(/\d+/)?.[0] || '0', 10));
     return values.reduce((a, b) => a * b, 1);
   };
 
+  // Parse carton size like "97.5*53*52.5cm" → CBM in m³
+  const parseCartonCbm = (specs: Record<string, unknown> | undefined): number => {
+    if (!specs) return 0;
+    for (const [k, v] of Object.entries(specs)) {
+      if (/carton\s*size/i.test(k)) {
+        const dims = String(v).match(/(\d+\.?\d*)\s*[*x×]\s*(\d+\.?\d*)\s*[*x×]\s*(\d+\.?\d*)/i);
+        if (dims) {
+          const l = parseFloat(dims[1]) / 100;
+          const w = parseFloat(dims[2]) / 100;
+          const h = parseFloat(dims[3]) / 100;
+          return Math.round(l * w * h * 10000) / 10000;
+        }
+      }
+    }
+    return 0;
+  };
+
   const buildItemFromProduct = (product: Product): DocumentItem => {
+    const specsObj = (product.specifications || {}) as Record<string, unknown>;
     const specsStr = product.specifications
       ? Object.entries(product.specifications).map(([k, v]) => `${k}: ${v}`).join(', ')
       : '';
-    const pcsPerCtn = parsePcsPerCtn(specsStr);
+    const pcsPerCtn = parsePcsPerCtn(specsObj, specsStr);
+    const cbmPerUnit = parseCartonCbm(specsObj);
     const moq = product.moq || 0;
     // Convert pcs MOQ to cartons
     const cartons = pcsPerCtn > 0 ? Math.round(moq / pcsPerCtn) : 0;
+    const quantity = cartons || moq;
     return {
       id: Date.now().toString() + Math.random().toString(36).slice(2, 10),
       image: product.imageUrl || '',
       description: `${product.name} (${product.itemNumber})`,
       specs: specsStr,
       moq,
-      quantity: cartons || moq, // cartons
+      quantity,
       unitPrice: 0,
       discount: 0,
-      cartons: 0,
+      cartons: quantity,
       ctnSize: '',
       grossWeight: 0,
       netWeight: 0,
-      cbm: 0,
-      cbmPerUnit: 0,
-      totalCbm: 0,
+      cbm: Math.round(quantity * cbmPerUnit * 10000) / 10000,
+      cbmPerUnit,
+      totalCbm: Math.round(quantity * cbmPerUnit * 10000) / 10000,
       remark: '',
     };
   };
