@@ -2,6 +2,7 @@ import { DOCUMENT_TYPE_TITLES, type DocumentData } from '@/api/documents';
 
 interface DocumentPreviewProps {
   data: DocumentData;
+  showRemark?: boolean;
 }
 
 // Convert number to English words for amount
@@ -49,7 +50,7 @@ function numberToWords(num: number): string {
   return words;
 }
 
-export default function DocumentPreview({ data }: DocumentPreviewProps) {
+export default function DocumentPreview({ data, showRemark = false }: DocumentPreviewProps) {
   const { type, sellerInfo, buyerInfo, items = [], terms, currency = 'USD', shippingMark } = data;
   const title = DOCUMENT_TYPE_TITLES[type] || 'DOCUMENT';
 
@@ -160,7 +161,9 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                 {showAmount && (
                   <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '85px' }}>Amount<br/><span className="text-[10px] opacity-80">({currencyLabel})</span></th>
                 )}
-                <th className="border border-gray-400 px-1 py-2 text-left" style={{ width: '50px', minWidth: '50px' }}>Remark</th>
+                {showRemark && (
+                  <th className="border border-gray-400 px-1 py-2 text-left" style={{ width: '50px', minWidth: '50px' }}>Remark</th>
+                )}
               </>
             )}
           </tr>
@@ -203,7 +206,9 @@ export default function DocumentPreview({ data }: DocumentPreviewProps) {
                     {showAmount && (
                       <td className="border border-gray-400 px-2 py-1 text-right font-semibold" style={{ whiteSpace: 'nowrap' }}>{currencySymbol}{((Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)).toFixed(2)}</td>
                     )}
-                    <td className="border border-gray-400 px-1 py-1 text-xs">{item.remark || '-'}</td>
+                    {showRemark && (
+                      <td className="border border-gray-400 px-1 py-1 text-xs">{item.remark || '-'}</td>
+                    )}
                   </>
                 )}
               </tr>

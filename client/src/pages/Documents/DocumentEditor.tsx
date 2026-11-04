@@ -136,6 +136,7 @@ export default function DocumentEditor() {
   const [bankInfo, setBankInfo] = useState<BankInfo>(emptyBankInfo);
   const [notes, setNotes] = useState('');
   const [shippingMark, setShippingMark] = useState('');
+  const [showRemark, setShowRemark] = useState(false);
 
   // Product picker
   const [showProductPicker, setShowProductPicker] = useState(false);
@@ -723,7 +724,11 @@ export default function DocumentEditor() {
           <Card>
             <CardHeader className="pb-3 flex flex-row items-center justify-between sticky top-0 z-10 bg-background border-b">
               <CardTitle className="text-sm">商品明细 ITEMS</CardTitle>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                  <input type="checkbox" checked={showRemark} onChange={(e) => setShowRemark(e.target.checked)} className="size-3.5" />
+                  Remark
+                </label>
                 <Button variant="outline" size="sm" onClick={openProductPicker}>
                   <Package className="mr-1 size-3" /> 从产品库选择
                 </Button>
@@ -839,7 +844,7 @@ export default function DocumentEditor() {
                       </>
                     )}
                   </div>
-                  {!isPL && (
+                  {!isPL && showRemark && (
                     <div className="space-y-1">
                       <Label className="text-xs">Remark</Label>
                       <Input value={item.remark} onChange={(e) => updateItem(item.id, 'remark', e.target.value)} placeholder="备注信息" />
@@ -997,7 +1002,7 @@ export default function DocumentEditor() {
               <Badge variant="outline">{DOCUMENT_TYPE_LABELS[type]}</Badge>
             </div>
             <div className="max-h-[calc(100vh-220px)] overflow-auto rounded bg-white p-8 shadow">
-              <DocumentPreview data={previewData} />
+              <DocumentPreview data={previewData} showRemark={showRemark} />
             </div>
           </div>
         </div>
