@@ -208,7 +208,8 @@ export default function DocumentEditor() {
   useEffect(() => {
     setItems((prev) => prev.map((item) => {
       if (!item.costPrice) return item;
-      const price = calcPrice(item.costPrice, Number(item.cbmPerUnit) || 0);
+      const pcs = parsePcsFromSpecs(item.specs || '');
+      const price = calcPrice(item.costPrice, Number(item.cbmPerUnit) || 0, pcs);
       return { ...item, unitPrice: price };
     }));
   }, [profitFactor, fobCost, containerCBM, exchangeRate, currency]);
@@ -381,26 +382,34 @@ export default function DocumentEditor() {
     };
   };
 
+  // Parse pcs/carton from specs string like "8pcs"
+  const parsePcsFromSpecs = (specs: string): number => {
+    if (!specs) return 0;
+    const m = specs.match(/(\d+)\s*pcs/i);
+    return m ? parseInt(m[1], 10) : 0;
+  };
+
   // Quick price calculator
-  // USD: (cost*profitFactor + fobCost/(containerCBM/productCbm)) / exchangeRate
-  // RMB: cost*profitFactor only
-  const calcPrice = (costRmb: number, productCbm: number): number => {
+  // USD: (cost_per_pc * pcs_per_ctn * profitFactor + fobCost/(containerCBM/productCbm)) / exchangeRate
+  // RMB: cost_per_pc * pcs_per_ctn * profitFactor
+  const calcPrice = (costRmb: number, productCbm: number, pcsPerCtn: number): number => {
     if (!costRmb) return 0;
+    const perCartonCost = costRmb * (pcsPerCtn || 1);
     if (currency === 'USD') {
       if (!productCbm || productCbm <= 0 || exchangeRate <= 0) return 0;
       const shippingPerCarton = fobCost / (containerCBM / productCbm);
-      const totalRmb = costRmb * profitFactor + shippingPerCarton;
+      const totalRmb = perCartonCost * profitFactor + shippingPerCarton;
       return Math.round((totalRmb / exchangeRate) * 100) / 100;
     }
-    // RMB: just cost * profitFactor
-    return Math.round(costRmb * profitFactor * 100) / 100;
+    return Math.round(perCartonCost * profitFactor * 100) / 100;
   };
 
   const handleCostPriceChange = (itemId: string, costStr: string) => {
     const cost = parseFloat(costStr) || 0;
     setItems((prev) => prev.map((item) => {
       if (item.id !== itemId) return item;
-      const price = calcPrice(cost, Number(item.cbmPerUnit) || 0);
+      const pcs = parsePcsFromSpecs(item.specs || '');
+      const price = calcPrice(cost, Number(item.cbmPerUnit) || 0, pcs);
       return { ...item, costPrice: cost, unitPrice: price };
     }));
   };
@@ -866,7 +875,7 @@ export default function DocumentEditor() {
                           <Input type="number" step="0.0001" value={item.totalCbm} readOnly className="bg-muted cursor-not-allowed" placeholder="自动计算" />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">成本价 (¥/箱)</Label>
+                          <Label className="text-xs">成本价 (¥/个)</Label>
                           <Input type="number" step="0.01" value={item.costPrice || ''} onChange={(e) => handleCostPriceChange(item.id, e.target.value)} placeholder="输入成本价自动算价" />
                         </div>
                         <div className="space-y-1">
