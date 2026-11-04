@@ -18,6 +18,7 @@ export interface DocumentItem {
   cbmPerUnit?: number;
   totalCbm?: number;
   remark?: string;
+  costPrice?: number;
 }
 
 export interface SellerInfo {

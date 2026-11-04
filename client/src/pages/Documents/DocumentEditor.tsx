@@ -137,6 +137,11 @@ export default function DocumentEditor() {
   const [notes, setNotes] = useState('');
   const [shippingMark, setShippingMark] = useState('');
   const [showRemark, setShowRemark] = useState(false);
+  // Quick price calculator defaults
+  const [profitFactor, setProfitFactor] = useState(1.13);
+  const [fobCost, setFobCost] = useState(8000);
+  const [containerCBM, setContainerCBM] = useState(67);
+  const [exchangeRate, setExchangeRate] = useState(6.7);
 
   // Product picker
   const [showProductPicker, setShowProductPicker] = useState(false);
@@ -365,6 +370,23 @@ export default function DocumentEditor() {
       totalCbm: Math.round(quantity * cbmPerUnit * 10000) / 10000,
       remark: '',
     };
+  };
+
+  // Quick price calculator: (cost*profitFactor + fobCost/(containerCBM/productCbm)) / exchangeRate
+  const calcPrice = (costRmb: number, productCbm: number): number => {
+    if (!costRmb || !productCbm || productCbm <= 0 || exchangeRate <= 0) return 0;
+    const shippingPerCarton = fobCost / (containerCBM / productCbm);
+    const totalRmb = costRmb * profitFactor + shippingPerCarton;
+    return Math.round((totalRmb / exchangeRate) * 100) / 100;
+  };
+
+  const handleCostPriceChange = (itemId: string, costStr: string) => {
+    const cost = parseFloat(costStr) || 0;
+    setItems((prev) => prev.map((item) => {
+      if (item.id !== itemId) return item;
+      const price = calcPrice(cost, Number(item.cbmPerUnit) || 0);
+      return { ...item, costPrice: cost, unitPrice: price };
+    }));
   };
 
   const confirmAddSelected = () => {
@@ -720,6 +742,31 @@ export default function DocumentEditor() {
             </CardContent>
           </Card>
 
+          {/* Quick Price Calculator Settings */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">快速计价 QUICK PRICE</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-4 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">利润系数</Label>
+                <Input type="number" step="0.01" value={profitFactor} onChange={(e) => setProfitFactor(parseFloat(e.target.value) || 1.13)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">40HQ FOB成本 (¥)</Label>
+                <Input type="number" value={fobCost} onChange={(e) => setFobCost(parseFloat(e.target.value) || 8000)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">40HQ可装体积 (m³)</Label>
+                <Input type="number" step="0.1" value={containerCBM} onChange={(e) => setContainerCBM(parseFloat(e.target.value) || 67)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">汇率 (RMB/USD)</Label>
+                <Input type="number" step="0.01" value={exchangeRate} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 6.7)} className="h-8 text-xs" />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Items */}
           <Card>
             <CardHeader className="pb-3 flex flex-row items-center justify-between sticky top-0 z-10 bg-background border-b">
@@ -801,6 +848,10 @@ export default function DocumentEditor() {
                         <div className="space-y-1">
                           <Label className="text-xs">Total CBM</Label>
                           <Input type="number" step="0.0001" value={item.totalCbm} readOnly className="bg-muted cursor-not-allowed" placeholder="自动计算" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">成本价 (¥/箱)</Label>
+                          <Input type="number" step="0.01" value={item.costPrice || ''} onChange={(e) => handleCostPriceChange(item.id, e.target.value)} placeholder="输入成本价自动算价" />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Unit Price</Label>
