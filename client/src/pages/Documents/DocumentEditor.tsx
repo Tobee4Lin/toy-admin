@@ -204,6 +204,15 @@ export default function DocumentEditor() {
     }
   }, [id, documentNo]);
 
+  // Recalculate all items with costPrice when calculator settings change
+  useEffect(() => {
+    setItems((prev) => prev.map((item) => {
+      if (!item.costPrice) return item;
+      const price = calcPrice(item.costPrice, Number(item.cbmPerUnit) || 0);
+      return { ...item, unitPrice: price };
+    }));
+  }, [profitFactor, fobCost, containerCBM, exchangeRate]);
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
