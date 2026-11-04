@@ -336,11 +336,21 @@ export default function DocumentEditor() {
     // Convert pcs MOQ to cartons
     const cartons = pcsPerCtn > 0 ? Math.round(moq / pcsPerCtn) : 0;
     const quantity = cartons || moq;
+    // Specs field: only show Pcs/Carton value with "pcs" unit
+    let specsDisplay = '';
+    if (pcsPerCtn > 0) {
+      // Check if the raw value already has a unit
+      let rawVal = '';
+      for (const [k, v] of Object.entries(specsObj)) {
+        if (/pcs\/carton/i.test(k)) { rawVal = String(v); break; }
+      }
+      specsDisplay = /pcs/i.test(rawVal) ? rawVal : `${pcsPerCtn}pcs`;
+    }
     return {
       id: Date.now().toString() + Math.random().toString(36).slice(2, 10),
       image: product.imageUrl || '',
       description: `${product.name} (${product.itemNumber})`,
-      specs: specsStr,
+      specs: specsDisplay,
       moq,
       quantity,
       unitPrice: 0,
