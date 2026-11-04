@@ -211,7 +211,7 @@ export default function DocumentEditor() {
       const price = calcPrice(item.costPrice, Number(item.cbmPerUnit) || 0);
       return { ...item, unitPrice: price };
     }));
-  }, [profitFactor, fobCost, containerCBM, exchangeRate]);
+  }, [profitFactor, fobCost, containerCBM, exchangeRate, currency]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -381,12 +381,19 @@ export default function DocumentEditor() {
     };
   };
 
-  // Quick price calculator: (cost*profitFactor + fobCost/(containerCBM/productCbm)) / exchangeRate
+  // Quick price calculator
+  // USD: (cost*profitFactor + fobCost/(containerCBM/productCbm)) / exchangeRate
+  // RMB: cost*profitFactor only
   const calcPrice = (costRmb: number, productCbm: number): number => {
-    if (!costRmb || !productCbm || productCbm <= 0 || exchangeRate <= 0) return 0;
-    const shippingPerCarton = fobCost / (containerCBM / productCbm);
-    const totalRmb = costRmb * profitFactor + shippingPerCarton;
-    return Math.round((totalRmb / exchangeRate) * 100) / 100;
+    if (!costRmb) return 0;
+    if (currency === 'USD') {
+      if (!productCbm || productCbm <= 0 || exchangeRate <= 0) return 0;
+      const shippingPerCarton = fobCost / (containerCBM / productCbm);
+      const totalRmb = costRmb * profitFactor + shippingPerCarton;
+      return Math.round((totalRmb / exchangeRate) * 100) / 100;
+    }
+    // RMB: just cost * profitFactor
+    return Math.round(costRmb * profitFactor * 100) / 100;
   };
 
   const handleCostPriceChange = (itemId: string, costStr: string) => {
