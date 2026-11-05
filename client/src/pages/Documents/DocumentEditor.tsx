@@ -14,6 +14,7 @@ import {
   Download,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -539,45 +540,126 @@ export default function DocumentEditor() {
     window.print();
   };
 
-  const handleExportExcel = () => {
-    // Build workbook with header info + items table
-    const headerRow = [
-      ['Shantou Levich Toys Co., Ltd.'],
-      [`Document: ${DOCUMENT_TYPE_LABELS[type]}  No: ${documentNo}  Date: ${date}  Validity: ${validity}`],
-      [`To: ${buyer.companyName || ''}  ${buyer.address || ''}  Tel: ${buyer.tel || ''}`],
-      [],
+  const handleExportExcel = async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Sheet1');
+
+    // Column widths
+    ws.columns = [
+      { width: 5 }, { width: 15 }, { width: 42 }, { width: 12 },
+      { width: 10 }, { width: 14 }, { width: 14 }, { width: 14 },
+      { width: 14 }, { width: 18 },
     ];
-    const tableHeader = ['No.', 'Image', 'Description', 'Specs', 'Qty (CTN)', 'CBM (m³/CTN)', 'Total CBM (m³)', `Price (${currency}/CTN)`, `Amount (${currency})`, 'Remark'];
-    const tableRows = items.map((item, i) => {
+
+    // Header rows
+    ws.mergeCells('A1:J1');
+    ws.getCell('A1').value = 'Shantou Levich Toys Co., Ltd.';
+    ws.getCell('A1').font = { size: 16, bold: true, color: { argb: 'FF1F4E78' } };
+
+    ws.mergeCells('A2:J2');
+    ws.getCell('A2').value = `Document: ${DOCUMENT_TYPE_LABELS[type]}    No: ${documentNo}    Date: ${date}    Validity: ${validity}`;
+    ws.getCell('A2').font = { size: 10 };
+
+    ws.mergeCells('A3:J3');
+    ws.getCell('A3').value = `To: ${buyer.companyName || ''}    ${buyer.address || ''}    Tel: ${buyer.tel || ''}`;
+    ws.getCell('A3').font = { size: 10 };
+
+    // Empty row
+    ws.addRow([]);
+
+    // Table header row
+    const headerRowNum = 5;
+    const headers = ['No.', 'Image', 'Description', 'Specs', 'Qty (CTN)', 'CBM (m³/CTN)', 'Total CBM (m³)', `Price (${currency}/CTN)`, `Amount (${currency})`, 'Remark'];
+    const headerRow = ws.getRow(headerRowNum);
+    headers.forEach((h, i) => {
+      const cell = headerRow.getCell(i + 1);
+      cell.value = h;
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E78' } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+    });
+    headerRow.height = 30;
+
+    // Product rows
+    let rowNum = headerRowNum + 1;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       const qty = Number(item.quantity) || 0;
       const cbm = Number(item.cbmPerUnit) || 0;
       const price = Number(item.unitPrice) || 0;
-      return [
-        i + 1,
-        '', // image placeholder
-        item.description || '',
-        item.specs || '',
-        qty,
-        cbm,
-        Math.round(qty * cbm * 10000) / 10000,
-        price,
-        Math.round(qty * price * 100) / 100,
-        item.remark || '',
-      ];
-    });
+      const amount = Math.round(qty * price * 100) / 100;
+      const totalCbm = Math.round(qty * cbm * 10000) / 10000;
+
+      const row = ws.getRow(rowNum);
+      row.height = 60;
+      row.getCell(1).value = i + 1;
+      row.getCell(2).value = ''; // image placeholder
+      row.getCell(3).value = item.description || '';
+      row.getCell(4).value = item.specs || '';
+      row.getCell(5).value = qty;
+      row.getCell(6).value = cbm;
+      row.getCell(7).value = totalCbm;
+      row.getCell(8).value = price;
+      row.getCell(9).value = amount;
+      row.getCell(10).value = item.remark || '';
+
+      // Borders and alignment
+      for (let c = 1; c <= 10; c++) {
+        const cell = row.getCell(c);
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        cell.alignment = { vertical: 'middle', wrapText: true };
+      }
+      row.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+      row.getCell(4).alignment = { horizontal: 'center', vertical: 'middle' };
+      row.getCell(5).alignment = { horizontal: 'center', vertical: 'middle' };
+
+      // Insert product image
+      if (item.image) {
+        try {
+          const resp = await fetch(item.image);
+          const blob = await resp.blob();
+          const ext = blob.type === 'image/png' ? 'png' : 'jpg';
+          const buf = await blob.arrayBuffer();
+          const imageId = wb.addImage({ buffer: buf, extension: ext });
+          ws.addImage(imageId, {
+            tl: { col: 1, row: rowNum - 1 },
+            br: { col: 2, row: rowNum },
+            editAs: 'oneCell',
+          });
+        } catch (e) {
+          // skip image if fails
+        }
+      }
+
+      rowNum++;
+    }
+
+    // Total row
     const totalQty = items.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
     const totalCbm = items.reduce((s, it) => s + (Number(it.quantity) || 0) * (Number(it.cbmPerUnit) || 0), 0);
     const totalAmount = items.reduce((s, it) => s + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0), 0);
-    const footerRow = ['', '', '', 'TOTAL', totalQty, '', Math.round(totalCbm * 10000) / 10000, '', Math.round(totalAmount * 100) / 100, ''];
 
-    const ws = XLSX.utils.aoa_to_sheet([...headerRow, tableHeader, ...tableRows, footerRow]);
-    ws['!cols'] = [
-      { wch: 5 }, { wch: 12 }, { wch: 40 }, { wch: 12 }, { wch: 10 },
-      { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 20 },
-    ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, DOCUMENT_TYPE_LABELS[type] || 'Quotation');
-    XLSX.writeFile(wb, `${documentNo || 'document'}.xlsx`);
+    const totalRow = ws.getRow(rowNum);
+    totalRow.getCell(4).value = 'TOTAL';
+    totalRow.getCell(5).value = totalQty;
+    totalRow.getCell(7).value = Math.round(totalCbm * 10000) / 10000;
+    totalRow.getCell(9).value = Math.round(totalAmount * 100) / 100;
+    for (let c = 1; c <= 10; c++) {
+      const cell = totalRow.getCell(c);
+      cell.font = { bold: true };
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+    }
+
+    // Export
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${documentNo || 'document'}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
     toast.success('已导出Excel');
   };
 
