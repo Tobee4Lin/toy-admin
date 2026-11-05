@@ -543,7 +543,7 @@ export default function DocumentEditor() {
     // Build workbook with header info + items table
     const headerRow = [
       ['Shantou Levich Toys Co., Ltd.'],
-      [`Document: ${documentTypeLabel}  No: ${documentNo}  Date: ${date}  Validity: ${validity}`],
+      [`Document: ${DOCUMENT_TYPE_LABELS[type]}  No: ${documentNo}  Date: ${date}  Validity: ${validity}`],
       [`To: ${buyer.companyName || ''}  ${buyer.address || ''}  Tel: ${buyer.tel || ''}`],
       [],
     ];
@@ -576,7 +576,7 @@ export default function DocumentEditor() {
       { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 20 },
     ];
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, documentTypeLabel || 'Quotation');
+    XLSX.utils.book_append_sheet(wb, ws, DOCUMENT_TYPE_LABELS[type] || 'Quotation');
     XLSX.writeFile(wb, `${documentNo || 'document'}.xlsx`);
     toast.success('已导出Excel');
   };
