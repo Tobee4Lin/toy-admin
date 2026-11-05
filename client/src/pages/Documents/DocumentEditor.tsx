@@ -141,10 +141,10 @@ export default function DocumentEditor() {
   const [shippingMark, setShippingMark] = useState('');
   const [showRemark, setShowRemark] = useState(false);
   // Quick price calculator defaults
-  const [profitFactor, setProfitFactor] = useState(1.13);
-  const [fobCost, setFobCost] = useState(8000);
-  const [containerCBM, setContainerCBM] = useState(67);
-  const [exchangeRate, setExchangeRate] = useState(6.7);
+  const [profitFactor, setProfitFactor] = useState(() => parseFloat(localStorage.getItem('qp_profitFactor') || '1.13'));
+  const [fobCost, setFobCost] = useState(() => parseFloat(localStorage.getItem('qp_fobCost') || '8000'));
+  const [containerCBM, setContainerCBM] = useState(() => parseFloat(localStorage.getItem('qp_containerCBM') || '67'));
+  const [exchangeRate, setExchangeRate] = useState(() => parseFloat(localStorage.getItem('qp_exchangeRate') || '6.7'));
 
   // Product picker
   const [showProductPicker, setShowProductPicker] = useState(false);
@@ -216,6 +216,14 @@ export default function DocumentEditor() {
       return { ...item, unitPrice: price };
     }));
   }, [profitFactor, fobCost, containerCBM, exchangeRate, currency]);
+
+  // Persist quick price settings
+  useEffect(() => {
+    localStorage.setItem('qp_profitFactor', String(profitFactor));
+    localStorage.setItem('qp_fobCost', String(fobCost));
+    localStorage.setItem('qp_containerCBM', String(containerCBM));
+    localStorage.setItem('qp_exchangeRate', String(exchangeRate));
+  }, [profitFactor, fobCost, containerCBM, exchangeRate]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
