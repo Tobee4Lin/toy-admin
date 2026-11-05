@@ -359,10 +359,10 @@ export default function DocumentEditor() {
       : '';
     const pcsPerCtn = parsePcsPerCtn(specsObj, specsStr);
     const cbmPerUnit = parseCartonCbm(specsObj);
-    // Extract carton size (package size) from specs
+    // Extract package size from specs
     let ctnSize = '';
     for (const [k, v] of Object.entries(specsObj)) {
-      if (/carton size|package size|ctn size/i.test(k)) { ctnSize = String(v); break; }
+      if (/package size/i.test(k)) { ctnSize = String(v); break; }
     }
     const moq = product.moq || 0;
     // Convert pcs MOQ to cartons
