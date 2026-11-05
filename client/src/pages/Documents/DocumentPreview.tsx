@@ -154,7 +154,7 @@ export default function DocumentPreview({ data, showRemark = false }: DocumentPr
                 <th className="border border-gray-400 px-1 py-2 text-center" style={{ width: '100px', minWidth: '100px' }}>Image</th>
                 <th className="border border-gray-400 px-2 py-2 text-left" style={{ width: '90px', minWidth: '90px' }}>Description</th>
                 <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '110px' }}>Specs<br/><span className="text-[10px] opacity-80">(per CTN)</span></th>
-                <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '90px' }}>Packing<br/><span className="text-[10px] opacity-80">(cm)</span></th>
+                <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '90px' }}>Package Size</th>
                 <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '75px' }}>CBM<br/><span className="text-[10px] opacity-80">(m³/CTN)</span></th>
                 <th className="border border-gray-400 px-2 py-2 text-center" style={{ width: '70px' }}>Unit Price<br/><span className="text-[10px] opacity-80">({currencyLabel})</span></th>
                 {showAmount && (
