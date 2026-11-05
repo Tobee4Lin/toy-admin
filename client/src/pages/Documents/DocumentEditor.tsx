@@ -359,6 +359,11 @@ export default function DocumentEditor() {
       : '';
     const pcsPerCtn = parsePcsPerCtn(specsObj, specsStr);
     const cbmPerUnit = parseCartonCbm(specsObj);
+    // Extract carton size (package size) from specs
+    let ctnSize = '';
+    for (const [k, v] of Object.entries(specsObj)) {
+      if (/carton size|package size|ctn size/i.test(k)) { ctnSize = String(v); break; }
+    }
     const moq = product.moq || 0;
     // Convert pcs MOQ to cartons
     const cartons = pcsPerCtn > 0 ? Math.round(moq / pcsPerCtn) : 0;
@@ -383,7 +388,7 @@ export default function DocumentEditor() {
       unitPrice: 0,
       discount: 0,
       cartons: quantity,
-      ctnSize: '',
+      ctnSize,
       grossWeight: 0,
       netWeight: 0,
       cbm: Math.round(quantity * cbmPerUnit * 10000) / 10000,
@@ -452,7 +457,7 @@ export default function DocumentEditor() {
       unitPrice: 0,
       discount: 0,
       cartons: 0,
-      ctnSize: '',
+      ctnSize,
       grossWeight: 0,
       netWeight: 0,
       cbm: 0,
