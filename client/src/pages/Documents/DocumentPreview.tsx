@@ -357,18 +357,18 @@ export default function DocumentPreview({ data, showRemark = false, showTotal = 
       )}
 
       {/* Signature */}
-      <div className="mt-10 flex justify-between text-xs">
+      <div className="mt-10 flex justify-between text-xs" style={{ pageBreakInside: 'avoid' }}>
         <div className="text-center">
           <div className="h-24 w-40"></div>
           <div className="border-t border-gray-400 w-40 pt-1">Buyer's Signature</div>
         </div>
-        <div className="text-center w-40">
-          <div className="h-24 w-40 relative">
+        <div className="text-center w-48">
+          <div className="h-24 w-48 relative">
             {sellerInfo?.signatureImage && (
               <img
                 src={sellerInfo.signatureImage}
                 alt="signature"
-                className="absolute bottom-0 left-[-30px] h-16 w-36 object-contain"
+                className="absolute bottom-0 left-0 h-16 w-40 object-contain"
                 style={{ mixBlendMode: 'multiply' }}
               />
             )}
@@ -376,12 +376,12 @@ export default function DocumentPreview({ data, showRemark = false, showTotal = 
               <img
                 src={sellerInfo.sealImage}
                 alt="seal"
-                className="absolute bottom-[-10px] right-[-20px] h-28 w-28 object-contain opacity-80"
+                className="absolute bottom-0 right-0 h-24 w-24 object-contain opacity-80"
                 style={{ mixBlendMode: 'multiply' }}
               />
             )}
           </div>
-          <div className="border-t border-gray-400 w-40 pt-1">Seller's Signature</div>
+          <div className="border-t border-gray-400 w-48 pt-1">Seller's Signature</div>
         </div>
       </div>
     </div>

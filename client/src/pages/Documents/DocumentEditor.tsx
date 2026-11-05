@@ -1160,7 +1160,8 @@ export default function DocumentEditor() {
           .print-area [class*="bg-[#f0f4f8]"] { padding: 4px !important; margin-bottom: 4px !important; }
           .print-area ul { margin: 0 !important; padding-left: 16px !important; }
           .print-area li { margin: 0 !important; }
-          .print-area img[src*="seal"], .print-area img[alt*="印章"], .print-area img[alt*="签名"] { max-height: 50px !important; max-width: 80px !important; }
+          .print-area img[alt="seal"] { max-height: 90px !important; max-width: 90px !important; }
+          .print-area img[alt="signature"] { max-height: 50px !important; max-width: 160px !important; }
           .print-area .document-preview { page-break-inside: avoid !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
