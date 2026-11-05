@@ -144,6 +144,7 @@ export default function DocumentEditor() {
   const [fobCost, setFobCost] = useState(() => parseFloat(localStorage.getItem('qp_fobCost') || '8000'));
   const [containerCBM, setContainerCBM] = useState(() => parseFloat(localStorage.getItem('qp_containerCBM') || '67'));
   const [exchangeRate, setExchangeRate] = useState(() => parseFloat(localStorage.getItem('qp_exchangeRate') || '6.7'));
+  const [printLandscape, setPrintLandscape] = useState(true);
 
   // Product picker
   const [showProductPicker, setShowProductPicker] = useState(false);
@@ -604,6 +605,9 @@ export default function DocumentEditor() {
               ))}
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm" onClick={() => setPrintLandscape(!printLandscape)}>
+            {printLandscape ? '竖屏' : '横屏'}
+          </Button>
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="mr-2 size-4" />
             打印/PDF
@@ -1101,7 +1105,7 @@ export default function DocumentEditor() {
       {/* Print styles */}
       <style>{`
         @media print {
-          @page { margin: 8mm; size: A4 landscape; background: white; }
+          @page { margin: 8mm; size: A4 ${printLandscape ? 'landscape' : 'portrait'}; background: white; }
           html, body { overflow: visible !important; height: auto !important; background: white !important; }
           body { background: white !important; }
           body * { visibility: hidden !important; }
