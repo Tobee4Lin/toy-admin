@@ -406,18 +406,17 @@ export default function DocumentEditor() {
   };
 
   // Quick price calculator
-  // USD: (cost_per_pc * pcs_per_ctn * profitFactor + fobCost/(containerCBM/productCbm)) / exchangeRate
-  // RMB: cost_per_pc * pcs_per_ctn * profitFactor
-  const calcPrice = (costRmb: number, productCbm: number, pcsPerCtn: number): number => {
+  // USD: (costPrice * profitFactor + fobCost/(containerCBM/productCbm)) / exchangeRate
+  // RMB: costPrice * profitFactor
+  const calcPrice = (costRmb: number, productCbm: number, _pcsPerCtn: number): number => {
     if (!costRmb) return 0;
-    const perCartonCost = costRmb * (pcsPerCtn || 1);
     if (currency === 'USD') {
       if (!productCbm || productCbm <= 0 || exchangeRate <= 0) return 0;
-      const shippingPerCarton = fobCost / (containerCBM / productCbm);
-      const totalRmb = perCartonCost * profitFactor + shippingPerCarton;
+      const shippingPerUnit = fobCost / (containerCBM / productCbm);
+      const totalRmb = costRmb * profitFactor + shippingPerUnit;
       return Math.round((totalRmb / exchangeRate) * 100) / 100;
     }
-    return Math.round(perCartonCost * profitFactor * 100) / 100;
+    return Math.round(costRmb * profitFactor * 100) / 100;
   };
 
   const handleCostPriceChange = (itemId: string, costStr: string) => {
