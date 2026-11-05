@@ -1115,6 +1115,7 @@ export default function DocumentEditor() {
           body { background: white !important; }
           body * { visibility: hidden !important; }
           .print-area, .print-area * { visibility: visible !important; }
+          .print-area .no-print { display: none !important; }
           .print-area { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; background: white !important; }
           .print-area .sticky { position: static !important; box-shadow: none !important; border: none !important; padding: 0 !important; background: white !important; }
           .print-area > div > div:last-child { max-height: none !important; overflow: visible !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; background: white !important; }
@@ -1145,6 +1146,8 @@ export default function DocumentEditor() {
           .print-area [class*="bg-[#f0f4f8]"] { padding: 4px !important; margin-bottom: 4px !important; }
           .print-area ul { margin: 0 !important; padding-left: 16px !important; }
           .print-area li { margin: 0 !important; }
+          .print-area img[src*="seal"], .print-area img[alt*="印章"], .print-area img[alt*="签名"] { max-height: 50px !important; max-width: 80px !important; }
+          .print-area .document-preview { page-break-inside: avoid !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
       `}</style>
