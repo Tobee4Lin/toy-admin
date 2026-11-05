@@ -1104,7 +1104,8 @@ export default function DocumentEditor() {
           @page { margin: 8mm; size: A4 landscape; background: white; }
           html, body { overflow: visible !important; height: auto !important; background: white !important; }
           body { background: white !important; }
-          .no-print { display: none !important; }
+          body * { visibility: hidden !important; }
+          .print-area, .print-area * { visibility: visible !important; }
           .print-area { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; background: white !important; }
           .print-area .sticky { position: static !important; box-shadow: none !important; border: none !important; padding: 0 !important; background: white !important; }
           .print-area > div > div:last-child { max-height: none !important; overflow: visible !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; background: white !important; }
