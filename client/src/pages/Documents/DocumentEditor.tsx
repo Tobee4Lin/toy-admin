@@ -550,7 +550,11 @@ export default function DocumentEditor() {
   };
 
   const handlePrint = () => {
+    const typeLabel = DOCUMENT_TYPE_LABELS[type] || 'Document';
+    const customerName = (buyer.companyName || 'Customer').replace(/[\\/:*?"<>|]/g, '');
+    document.title = `${typeLabel}-${documentNo || 'Document'}-${customerName}`;
     window.print();
+    setTimeout(() => { document.title = 'ToyAdmin'; }, 100);
   };
 
   const previewData: DocumentData = {
