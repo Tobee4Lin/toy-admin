@@ -376,7 +376,7 @@ export default function DocumentPreview({ data, showRemark = false, showTotal = 
               <img
                 src={sellerInfo.sealImage}
                 alt="seal"
-                className="absolute -bottom-15 right-[-35px] h-40 w-40 object-contain opacity-80"
+                className="absolute bottom-[-10px] right-[-20px] h-28 w-28 object-contain opacity-80"
                 style={{ mixBlendMode: 'multiply' }}
               />
             )}

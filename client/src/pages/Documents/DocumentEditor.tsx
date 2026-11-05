@@ -139,7 +139,7 @@ export default function DocumentEditor() {
   const [notes, setNotes] = useState('');
   const [shippingMark, setShippingMark] = useState('');
   const [showRemark, setShowRemark] = useState(false);
-  const [showTotal, setShowTotal] = useState(true);
+  const [showTotal, setShowTotal] = useState(() => localStorage.getItem('doc_showTotal') !== '0');
   // Quick price calculator defaults
   const [profitFactor, setProfitFactor] = useState(() => parseFloat(localStorage.getItem('qp_profitFactor') || '1.13'));
   const [fobCost, setFobCost] = useState(() => parseFloat(localStorage.getItem('qp_fobCost') || '8000'));
@@ -225,6 +225,10 @@ export default function DocumentEditor() {
     localStorage.setItem('qp_containerCBM', String(containerCBM));
     localStorage.setItem('qp_exchangeRate', String(exchangeRate));
   }, [profitFactor, fobCost, containerCBM, exchangeRate]);
+
+  useEffect(() => {
+    localStorage.setItem('doc_showTotal', showTotal ? '1' : '0');
+  }, [showTotal]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -819,15 +823,21 @@ export default function DocumentEditor() {
           <Card>
             <CardHeader className="pb-3 flex flex-row items-center justify-between sticky top-0 z-10 bg-background border-b">
               <CardTitle className="text-sm">商品明细 ITEMS</CardTitle>
-              <div className="flex gap-2 items-center">
-                <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-                  <input type="checkbox" checked={showRemark} onChange={(e) => setShowRemark(e.target.checked)} className="size-3.5" />
+              <div className="flex gap-1.5 items-center">
+                <button
+                  type="button"
+                  onClick={() => setShowRemark(!showRemark)}
+                  className={`px-2 py-0.5 rounded text-xs border transition-colors ${showRemark ? 'bg-blue-50 border-blue-300 text-blue-700' : 'border-gray-200 text-gray-400'}`}
+                >
                   Remark
-                </label>
-                <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-                  <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowTotal(!showTotal)}
+                  className={`px-2 py-0.5 rounded text-xs border transition-colors ${showTotal ? 'bg-blue-50 border-blue-300 text-blue-700' : 'border-gray-200 text-gray-400'}`}
+                >
                   总价
-                </label>
+                </button>
                 <Button variant="outline" size="sm" onClick={openProductPicker}>
                   <Package className="mr-1 size-3" /> 从产品库选择
                 </Button>
