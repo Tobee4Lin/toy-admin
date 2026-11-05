@@ -11,7 +11,9 @@ import {
   Package,
   Search,
   PenLine,
+  Download,
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -537,6 +539,48 @@ export default function DocumentEditor() {
     window.print();
   };
 
+  const handleExportExcel = () => {
+    // Build workbook with header info + items table
+    const headerRow = [
+      ['Shantou Levich Toys Co., Ltd.'],
+      [`Document: ${documentTypeLabel}  No: ${documentNo}  Date: ${date}  Validity: ${validity}`],
+      [`To: ${buyer.companyName || ''}  ${buyer.address || ''}  Tel: ${buyer.tel || ''}`],
+      [],
+    ];
+    const tableHeader = ['No.', 'Image', 'Description', 'Specs', 'Qty (CTN)', 'CBM (m³/CTN)', 'Total CBM (m³)', `Price (${currency}/CTN)`, `Amount (${currency})`, 'Remark'];
+    const tableRows = items.map((item, i) => {
+      const qty = Number(item.quantity) || 0;
+      const cbm = Number(item.cbmPerUnit) || 0;
+      const price = Number(item.unitPrice) || 0;
+      return [
+        i + 1,
+        '', // image placeholder
+        item.description || '',
+        item.specs || '',
+        qty,
+        cbm,
+        Math.round(qty * cbm * 10000) / 10000,
+        price,
+        Math.round(qty * price * 100) / 100,
+        item.remark || '',
+      ];
+    });
+    const totalQty = items.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
+    const totalCbm = items.reduce((s, it) => s + (Number(it.quantity) || 0) * (Number(it.cbmPerUnit) || 0), 0);
+    const totalAmount = items.reduce((s, it) => s + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0), 0);
+    const footerRow = ['', '', '', 'TOTAL', totalQty, '', Math.round(totalCbm * 10000) / 10000, '', Math.round(totalAmount * 100) / 100, ''];
+
+    const ws = XLSX.utils.aoa_to_sheet([...headerRow, tableHeader, ...tableRows, footerRow]);
+    ws['!cols'] = [
+      { wch: 5 }, { wch: 12 }, { wch: 40 }, { wch: 12 }, { wch: 10 },
+      { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 20 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, documentTypeLabel || 'Quotation');
+    XLSX.writeFile(wb, `${documentNo || 'document'}.xlsx`);
+    toast.success('已导出Excel');
+  };
+
   const previewData: DocumentData = {
     type,
     documentNo,
@@ -593,6 +637,10 @@ export default function DocumentEditor() {
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="mr-2 size-4" />
             打印/PDF
+          </Button>
+          <Button variant="outline" onClick={handleExportExcel}>
+            <Download className="mr-2 size-4" />
+            导出Excel
           </Button>
           <Button onClick={handleSave} disabled={saving}>
             <Save className="mr-2 size-4" />
