@@ -3,6 +3,7 @@ import { DOCUMENT_TYPE_TITLES, type DocumentData } from '@/api/documents';
 interface DocumentPreviewProps {
   data: DocumentData;
   showRemark?: boolean;
+  showTotal?: boolean;
 }
 
 // Convert number to English words for amount
@@ -50,7 +51,7 @@ function numberToWords(num: number): string {
   return words;
 }
 
-export default function DocumentPreview({ data, showRemark = false }: DocumentPreviewProps) {
+export default function DocumentPreview({ data, showRemark = false, showTotal = true }: DocumentPreviewProps) {
   const { type, sellerInfo, buyerInfo, items = [], terms, currency = 'USD', shippingMark } = data;
   const title = DOCUMENT_TYPE_TITLES[type] || 'DOCUMENT';
 
@@ -272,7 +273,7 @@ export default function DocumentPreview({ data, showRemark = false }: DocumentPr
       )}
 
       {/* Grand Total for Quotation (QT) */}
-      {!showAmount && !isPL && items.length > 0 && (
+      {!showAmount && !isPL && showTotal && items.length > 0 && (
         <div className="mt-2 mb-4 flex justify-end">
           <div style={{ width: '45%' }} className="flex justify-between items-center py-1.5 border-t-2 border-[#1F4E78]">
             <span className="text-base font-bold text-[#1F4E78]">Grand Total:</span>

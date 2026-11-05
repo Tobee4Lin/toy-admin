@@ -139,6 +139,7 @@ export default function DocumentEditor() {
   const [notes, setNotes] = useState('');
   const [shippingMark, setShippingMark] = useState('');
   const [showRemark, setShowRemark] = useState(false);
+  const [showTotal, setShowTotal] = useState(true);
   // Quick price calculator defaults
   const [profitFactor, setProfitFactor] = useState(() => parseFloat(localStorage.getItem('qp_profitFactor') || '1.13'));
   const [fobCost, setFobCost] = useState(() => parseFloat(localStorage.getItem('qp_fobCost') || '8000'));
@@ -819,6 +820,10 @@ export default function DocumentEditor() {
                   <input type="checkbox" checked={showRemark} onChange={(e) => setShowRemark(e.target.checked)} className="size-3.5" />
                   Remark
                 </label>
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                  <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="size-3.5" />
+                  总价
+                </label>
                 <Button variant="outline" size="sm" onClick={openProductPicker}>
                   <Package className="mr-1 size-3" /> 从产品库选择
                 </Button>
@@ -1096,7 +1101,7 @@ export default function DocumentEditor() {
               <Badge variant="outline">{DOCUMENT_TYPE_LABELS[type]}</Badge>
             </div>
             <div className="max-h-[calc(100vh-220px)] overflow-auto rounded bg-white p-8 shadow">
-              <DocumentPreview data={previewData} showRemark={showRemark} />
+              <DocumentPreview data={previewData} showRemark={showRemark} showTotal={showTotal} />
             </div>
           </div>
         </div>
