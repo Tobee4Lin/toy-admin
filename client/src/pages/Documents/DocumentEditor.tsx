@@ -884,6 +884,12 @@ export default function DocumentEditor() {
                       <Input value={item.specs} onChange={(e) => updateItem(item.id, 'specs', e.target.value)} />
                     </div>
                   )}
+                  {!isPL && (
+                    <div className="space-y-1">
+                      <Label className="text-xs">Package Size</Label>
+                      <Input value={item.ctnSize || ''} onChange={(e) => updateItem(item.id, 'ctnSize', e.target.value)} placeholder="如 40*25*8.7cm" />
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                     {!isPL ? (
                       <>
