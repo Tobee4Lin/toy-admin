@@ -242,6 +242,7 @@ export default function DocumentEditor() {
       toast.error('Logo 上传失败');
     } finally {
       setUploadingLogo(false);
+      e.target.value = '';
     }
   };
 
@@ -257,6 +258,7 @@ export default function DocumentEditor() {
       toast.error('印章上传失败');
     } finally {
       setUploadingSeal(false);
+      e.target.value = '';
     }
   };
 
@@ -272,6 +274,7 @@ export default function DocumentEditor() {
       toast.error('签名上传失败');
     } finally {
       setUploadingSignature(false);
+      e.target.value = '';
     }
   };
 
@@ -491,6 +494,8 @@ export default function DocumentEditor() {
       updateItem(itemId, 'image', url);
     } catch {
       toast.error('图片上传失败');
+    } finally {
+      e.target.value = '';
     }
   };
 
