@@ -164,7 +164,8 @@ export class CustomerService {
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Sort by priority (A > B > C > D), then by created_at desc.
+    // Sort by priority (A > B > C > D), then by most recent follow-up first;
+    // customers never followed up fall to the bottom within the same priority.
     const priorityOrder = sql`CASE ${schema.customer.priority}
       WHEN 'A' THEN 1
       WHEN 'B' THEN 2
@@ -176,7 +177,7 @@ export class CustomerService {
       .select()
       .from(schema.customer)
       .where(where)
-      .orderBy(priorityOrder, desc(schema.customer.createdAt))
+      .orderBy(priorityOrder, desc(schema.customer.lastFollowUpAt), desc(schema.customer.createdAt))
       .limit(pageSize)
       .offset(offset)
       .all();
