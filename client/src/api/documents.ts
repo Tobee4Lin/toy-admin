@@ -53,8 +53,8 @@ export interface BankInfo {
   accountName?: string;
   accountNumber?: string;
   swiftCode?: string;
-  iban?: string;
-  routingNumber?: string;
+  bankCode?: string;
+  branchCode?: string;
 }
 
 export interface DocumentData {

@@ -90,8 +90,8 @@ const emptyBankInfo: BankInfo = {
   accountName: '',
   accountNumber: '',
   swiftCode: '',
-  iban: '',
-  routingNumber: '',
+  bankCode: '',
+  branchCode: '',
 };
 
 function createEmptyItem(): DocumentItem {
@@ -1097,13 +1097,13 @@ export default function DocumentEditor() {
                     <Input value={bankInfo.swiftCode} onChange={(e) => setBankInfo({ ...bankInfo, swiftCode: e.target.value })} />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">IBAN</Label>
-                    <Input value={bankInfo.iban} onChange={(e) => setBankInfo({ ...bankInfo, iban: e.target.value })} />
+                    <Label className="text-xs">Bank Code</Label>
+                    <Input value={bankInfo.bankCode} onChange={(e) => setBankInfo({ ...bankInfo, bankCode: e.target.value })} />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Routing Number (USD)</Label>
-                  <Input value={bankInfo.routingNumber} onChange={(e) => setBankInfo({ ...bankInfo, routingNumber: e.target.value })} />
+                  <Label className="text-xs">Branch Code</Label>
+                  <Input value={bankInfo.branchCode} onChange={(e) => setBankInfo({ ...bankInfo, branchCode: e.target.value })} />
                 </div>
               </CardContent>
             </Card>

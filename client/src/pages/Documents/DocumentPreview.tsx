@@ -320,11 +320,11 @@ export default function DocumentPreview({ data, showRemark = false, showTotal = 
               {data.bankInfo.swiftCode && (
                 <div><span className="font-semibold">SWIFT Code:</span> {data.bankInfo.swiftCode}</div>
               )}
-              {data.bankInfo.iban && (
-                <div><span className="font-semibold">IBAN:</span> {data.bankInfo.iban}</div>
+              {data.bankInfo.bankCode && (
+                <div><span className="font-semibold">Bank Code:</span> {data.bankInfo.bankCode}</div>
               )}
-              {data.bankInfo.routingNumber && (
-                <div><span className="font-semibold">Routing No.:</span> {data.bankInfo.routingNumber}</div>
+              {data.bankInfo.branchCode && (
+                <div><span className="font-semibold">Branch Code:</span> {data.bankInfo.branchCode}</div>
               )}
               {data.bankInfo.bankAddress && (
                 <div className="col-span-2"><span className="font-semibold">Bank Address:</span> {data.bankInfo.bankAddress}</div>
