@@ -167,6 +167,7 @@ export default function DocumentEditor() {
           if (data.validity) setValidity(data.validity);
           if (data.currency) setCurrency(data.currency);
           if (data.sellerInfo) setSeller(data.sellerInfo);
+          if (data.bankInfo) setBankInfo({ ...emptyBankInfo, ...data.bankInfo });
           if (data.terms) setTerms(data.terms);
         }
       } catch { /* ignore */ }
@@ -539,6 +540,7 @@ export default function DocumentEditor() {
           validity,
           currency,
           sellerInfo: seller,
+          bankInfo,
           terms,
         }));
       } catch { /* ignore */ }
